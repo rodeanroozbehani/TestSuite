@@ -1,4 +1,4 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="ReadExcelDataset" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:this="clr-namespace:" xmlns:ue="clr-namespace:UiPath.Excel;assembly=UiPath.Excel.Activities" xmlns:ueab="clr-namespace:UiPath.Excel.Activities.Business;assembly=UiPath.Excel.Activities" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="ReadExcelDataset" this:ReadExcelDataset.in_SheetName="Sheet1" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:this="clr-namespace:" xmlns:ue="clr-namespace:UiPath.Excel;assembly=UiPath.Excel.Activities" xmlns:ueab="clr-namespace:UiPath.Excel.Activities.Business;assembly=UiPath.Excel.Activities" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
     <x:Property Name="out_DateTimeMostRecentTransaction" Type="OutArgument(s:DateTime)">
       <x:Property.Attributes>
@@ -7,7 +7,7 @@
     </x:Property>
     <x:Property Name="in_HomeloanDataOffsetDays" Type="InArgument(x:Int32)" />
     <x:Property Name="strFinancialManagementFile" Type="InArgument(x:String)" />
-    <x:Property Name="dtExcelDataTabe" Type="OutArgument(sd:DataTable)">
+    <x:Property Name="dtCallCenterDataTabe" Type="OutArgument(sd:DataTable)">
       <x:Property.Attributes>
         <RequiredArgumentAttribute />
       </x:Property.Attributes>
@@ -17,9 +17,6 @@
   <this:ReadExcelDataset.strFinancialManagementFile>
     <InArgument x:TypeArguments="x:String" />
   </this:ReadExcelDataset.strFinancialManagementFile>
-  <this:ReadExcelDataset.in_SheetName>
-    <InArgument x:TypeArguments="x:String" />
-  </this:ReadExcelDataset.in_SheetName>
   <sap2010:WorkflowViewState.IdRef>ActivityBuilder_1</sap2010:WorkflowViewState.IdRef>
   <TextExpression.NamespacesForImplementation>
     <sco:Collection x:TypeArguments="x:String">
@@ -208,9 +205,10 @@
       <AssemblyReference>System.Runtime.Serialization</AssemblyReference>
       <AssemblyReference>System.ServiceModel</AssemblyReference>
       <AssemblyReference>System.ServiceModel.Activities</AssemblyReference>
+      <AssemblyReference>NPOI.Core</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap:VirtualizedContainerService.HintSize="1576,2538.6666666666665" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <Sequence sap:VirtualizedContainerService.HintSize="1127.3333333333333,2529.3333333333335" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Name="io_strMostRecentTransaction" />
       <Variable x:TypeArguments="sd:DataRow" Name="newRow" />
@@ -221,7 +219,7 @@
         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
-    <Sequence sap2010:Annotation.AnnotationText="Reads raw dataset: Find most recent transaction and converts to consumable DT" DisplayName="Sequence: Read Excel Dataset" sap:VirtualizedContainerService.HintSize="685.3333333333334,2516" sap2010:WorkflowViewState.IdRef="Sequence_121">
+    <Sequence sap2010:Annotation.AnnotationText="Reads raw dataset: Find most recent transaction and converts to consumable DT" DisplayName="Sequence: Read Excel Dataset" sap:VirtualizedContainerService.HintSize="686.6666666666666,2506.6666666666665" sap2010:WorkflowViewState.IdRef="Sequence_121">
       <sap:WorkflowViewStateService.ViewState>
         <scg:Dictionary x:TypeArguments="x:String, x:Object">
           <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -229,19 +227,19 @@
           <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
         </scg:Dictionary>
       </sap:WorkflowViewStateService.ViewState>
-      <ueab:ExcelProcessScopeX DisplayAlerts="{x:Null}" ExistingProcessAction="{x:Null}" FileConflictResolution="{x:Null}" LaunchMethod="{x:Null}" LaunchTimeout="{x:Null}" MacroSettings="{x:Null}" ProcessMode="{x:Null}" ShowExcelWindow="{x:Null}" DisplayName="Excel Process Scope" sap:VirtualizedContainerService.HintSize="651.3333333333334,2402.6666666666665" sap2010:WorkflowViewState.IdRef="ExcelProcessScopeX_1">
+      <ueab:ExcelProcessScopeX DisplayAlerts="{x:Null}" ExistingProcessAction="{x:Null}" FileConflictResolution="{x:Null}" LaunchMethod="{x:Null}" LaunchTimeout="{x:Null}" MacroSettings="{x:Null}" ProcessMode="{x:Null}" ShowExcelWindow="{x:Null}" DisplayName="Excel Process Scope" sap:VirtualizedContainerService.HintSize="652.6666666666666,2393.3333333333335" sap2010:WorkflowViewState.IdRef="ExcelProcessScopeX_1">
         <ueab:ExcelProcessScopeX.Body>
           <ActivityAction x:TypeArguments="ui:IExcelProcess">
             <ActivityAction.Argument>
               <DelegateInArgument x:TypeArguments="ui:IExcelProcess" Name="ExcelProcessScopeTag" />
             </ActivityAction.Argument>
-            <ueab:ExcelApplicationCard Password="{x:Null}" ReadFormatting="{x:Null}" SensitivityLabel="{x:Null}" sap2010:Annotation.AnnotationText="Sorts the dataset&#xA;Gets most recent transaction&#xA;Navigates to BW page, gets the latest transactions&#xA;Adds records to dataset" CreateNewFile="False" DisplayName="Use Excel File" sap:VirtualizedContainerService.HintSize="617.3333333333334,2292.6666666666665" sap2010:WorkflowViewState.IdRef="ExcelApplicationCard_1" KeepExcelFileOpen="True" ResizeWindow="None" SensitivityOperation="None" TemplatePath="C:\Users\Rodean\Dropbox\Rodean Soheyla\HomeloanDataset.xlsx" UseTemplate="True" WorkbookPath="[strFinancialManagementFile]">
+            <ueab:ExcelApplicationCard Password="{x:Null}" ReadFormatting="{x:Null}" SensitivityLabel="{x:Null}" sap2010:Annotation.AnnotationText="Sorts the dataset&#xA;Gets most recent transaction&#xA;Navigates to BW page, gets the latest transactions&#xA;Adds records to dataset" CreateNewFile="False" DisplayName="Use Excel File" sap:VirtualizedContainerService.HintSize="618.6666666666666,2283.3333333333335" sap2010:WorkflowViewState.IdRef="ExcelApplicationCard_1" KeepExcelFileOpen="True" ResizeWindow="None" SensitivityOperation="None" WorkbookPath="[str_CallCenterFile]">
               <ueab:ExcelApplicationCard.Body>
                 <ActivityAction x:TypeArguments="ue:IWorkbookQuickHandle">
                   <ActivityAction.Argument>
                     <DelegateInArgument x:TypeArguments="ue:IWorkbookQuickHandle" Name="Excel" />
                   </ActivityAction.Argument>
-                  <Sequence sap2010:Annotation.AnnotationText="Builds DataTable, reads raw data from Exccel and converts them from system objects to consumable data for the workflow" DisplayName="Sequence to get Dataset and add to workbok" sap:VirtualizedContainerService.HintSize="583.3333333333334,1912" sap2010:WorkflowViewState.IdRef="Sequence_123">
+                  <Sequence sap2010:Annotation.AnnotationText="Builds DataTable, reads raw data from Exccel and converts them from system objects to consumable data for the workflow" DisplayName="Sequence to get Dataset and add to workbok" sap:VirtualizedContainerService.HintSize="584.6666666666666,1925.3333333333333" sap2010:WorkflowViewState.IdRef="Sequence_123">
                     <sap:WorkflowViewStateService.ViewState>
                       <scg:Dictionary x:TypeArguments="x:String, x:Object">
                         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -249,21 +247,21 @@
                         <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
                       </scg:Dictionary>
                     </sap:WorkflowViewStateService.ViewState>
-                    <ui:BuildDataTable DataTable="[dtExcelDataTabe]" DisplayName="Build dtExcelData" sap:VirtualizedContainerService.HintSize="549.3333333333334,92" sap2010:WorkflowViewState.IdRef="BuildDataTable_2" TableInfo="&lt;NewDataSet&gt;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xA;      &lt;xs:complexType&gt;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xA;            &lt;xs:complexType&gt;&#xA;              &lt;xs:sequence&gt;&#xA;                &lt;xs:element name=&quot;BSB_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Account_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Transaction_x0020_Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Narration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Cheque_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Debit&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Credit&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Balance&quot; msdata:Caption=&quot;&quot; type=&quot;xs:decimal&quot; default=&quot;0.0&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Transaction_x0020_Type&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;              &lt;/xs:sequence&gt;&#xA;            &lt;/xs:complexType&gt;&#xA;          &lt;/xs:element&gt;&#xA;        &lt;/xs:choice&gt;&#xA;      &lt;/xs:complexType&gt;&#xA;    &lt;/xs:element&gt;&#xA;  &lt;/xs:schema&gt;&#xA;&lt;/NewDataSet&gt;">
+                    <ui:BuildDataTable DataTable="[dtRawData]" DisplayName="Build dtRawData" sap:VirtualizedContainerService.HintSize="550.6666666666666,96" sap2010:WorkflowViewState.IdRef="BuildDataTable_4" TableInfo="&lt;NewDataSet&gt;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xA;      &lt;xs:complexType&gt;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xA;            &lt;xs:complexType&gt;&#xA;              &lt;xs:sequence&gt;&#xA;                &lt;xs:element name=&quot;Call_x0020_Id&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Agent&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Time&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Answered_x0020__x0028_Y_x002F_N_x0029_&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Resolved&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Speed_x0020_of_x0020_answer_x0020_in_x0020_seconds&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;AvgTalkDuration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Satisfaction_x0020_rating&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;              &lt;/xs:sequence&gt;&#xA;            &lt;/xs:complexType&gt;&#xA;          &lt;/xs:element&gt;&#xA;        &lt;/xs:choice&gt;&#xA;      &lt;/xs:complexType&gt;&#xA;    &lt;/xs:element&gt;&#xA;  &lt;/xs:schema&gt;&#xA;&lt;/NewDataSet&gt;">
                       <sap:WorkflowViewStateService.ViewState>
                         <scg:Dictionary x:TypeArguments="x:String, x:Object">
                           <x:Boolean x:Key="IsPinned">False</x:Boolean>
                         </scg:Dictionary>
                       </sap:WorkflowViewStateService.ViewState>
                     </ui:BuildDataTable>
-                    <ui:BuildDataTable DataTable="[dtRawData]" DisplayName="Build dtExcelData" sap:VirtualizedContainerService.HintSize="549.3333333333334,92" sap2010:WorkflowViewState.IdRef="BuildDataTable_3" TableInfo="&lt;NewDataSet&gt;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xA;      &lt;xs:complexType&gt;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xA;            &lt;xs:complexType&gt;&#xA;              &lt;xs:sequence&gt;&#xA;                &lt;xs:element name=&quot;BSB_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Account_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Transaction_x0020_Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Narration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Cheque_x0020_Number&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Debit&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Credit&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Balance&quot; msdata:Caption=&quot;&quot; type=&quot;xs:decimal&quot; default=&quot;0.0&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Transaction_x0020_Type&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;              &lt;/xs:sequence&gt;&#xA;            &lt;/xs:complexType&gt;&#xA;          &lt;/xs:element&gt;&#xA;        &lt;/xs:choice&gt;&#xA;      &lt;/xs:complexType&gt;&#xA;    &lt;/xs:element&gt;&#xA;  &lt;/xs:schema&gt;&#xA;&lt;/NewDataSet&gt;">
+                    <ui:BuildDataTable DataTable="[dtCallCenterDataTabe]" DisplayName="Build dtExcelData" sap:VirtualizedContainerService.HintSize="550.6666666666666,92" sap2010:WorkflowViewState.IdRef="BuildDataTable_2" TableInfo="&lt;NewDataSet&gt;&#xD;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xD;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xD;&#xA;      &lt;xs:complexType&gt;&#xD;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xD;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xD;&#xA;            &lt;xs:complexType&gt;&#xD;&#xA;              &lt;xs:sequence&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Call_x0020_Id&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Agent&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Time&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Answered_x0020__x0028_Y_x002F_N_x0029_&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Resolved&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Speed_x0020_of_x0020_answer_x0020_in_x0020_seconds&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;AvgTalkDuration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Satisfaction_x0020_rating&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;/xs:sequence&gt;&#xD;&#xA;            &lt;/xs:complexType&gt;&#xD;&#xA;          &lt;/xs:element&gt;&#xD;&#xA;        &lt;/xs:choice&gt;&#xD;&#xA;      &lt;/xs:complexType&gt;&#xD;&#xA;    &lt;/xs:element&gt;&#xD;&#xA;  &lt;/xs:schema&gt;&#xD;&#xA;&lt;/NewDataSet&gt;">
                       <sap:WorkflowViewStateService.ViewState>
                         <scg:Dictionary x:TypeArguments="x:String, x:Object">
                           <x:Boolean x:Key="IsPinned">False</x:Boolean>
                         </scg:Dictionary>
                       </sap:WorkflowViewStateService.ViewState>
                     </ui:BuildDataTable>
-                    <ui:ExcelReadRange AddHeaders="True" DataTable="[dtRawData]" DisplayName="Read Range: Homeloan Dataset" sap:VirtualizedContainerService.HintSize="549.3333333333334,92" sap2010:WorkflowViewState.IdRef="ExcelReadRange_4" Range="A:I" SheetName="[in_SheetName]">
+                    <ui:ExcelReadRange AddHeaders="True" DataTable="[dtRawData]" DisplayName="Read Range: Call Center Dataset" sap:VirtualizedContainerService.HintSize="550.6666666666666,96" sap2010:WorkflowViewState.IdRef="ExcelReadRange_4" Range="A:J" SheetName="[in_SheetName]">
                       <sap:WorkflowViewStateService.ViewState>
                         <scg:Dictionary x:TypeArguments="x:String, x:Object">
                           <x:Boolean x:Key="IsPinned">False</x:Boolean>
@@ -271,13 +269,21 @@
                         </scg:Dictionary>
                       </sap:WorkflowViewStateService.ViewState>
                     </ui:ExcelReadRange>
-                    <ui:FilterDataTable DataTable="[dtRawData]" DisplayName="Filter empty rows dtRawData" FilterRowsMode="Keep" sap:VirtualizedContainerService.HintSize="549.3333333333334,196" sap2010:WorkflowViewState.IdRef="FilterDataTable_2" OutputDataTable="[dtRawData]" SelectColumnsMode="Remove">
+                    <ui:FilterDataTable DataTable="[dtRawData]" DisplayName="Filter empty rows CallCenter Data" FilterRowsMode="Keep" sap:VirtualizedContainerService.HintSize="550.6666666666666,200" sap2010:WorkflowViewState.IdRef="FilterDataTable_2" OutputDataTable="[dtRawData]" SelectColumnsMode="Remove">
                       <ui:FilterDataTable.Filters>
                         <scg:List x:TypeArguments="ui:FilterOperationArgument" Capacity="4">
                           <ui:FilterOperationArgument Operand="{x:Null}" BooleanOperator="And" Operator="NOTEMPTY">
                             <ui:FilterOperationArgument.Column>
-                              <InArgument x:TypeArguments="x:String">["Balance"]</InArgument>
+                              <InArgument x:TypeArguments="x:String">["Call Id"]</InArgument>
                             </ui:FilterOperationArgument.Column>
+                          </ui:FilterOperationArgument>
+                          <ui:FilterOperationArgument BooleanOperator="And" Operator="EQ">
+                            <ui:FilterOperationArgument.Column>
+                              <InArgument x:TypeArguments="x:String">["Answered (Y/N)"]</InArgument>
+                            </ui:FilterOperationArgument.Column>
+                            <ui:FilterOperationArgument.Operand>
+                              <InArgument x:TypeArguments="x:String">["Y"]</InArgument>
+                            </ui:FilterOperationArgument.Operand>
                           </ui:FilterOperationArgument>
                         </scg:List>
                       </ui:FilterDataTable.Filters>
@@ -287,93 +293,20 @@
                         </scg:List>
                       </ui:FilterDataTable.SelectColumns>
                     </ui:FilterDataTable>
-                    <If Condition="[Excel.Sheet(in_SheetName).Cell(&quot;C2&quot;).StringValue.AsText.Equals(&quot;&quot;)]" DisplayName="Assign datetimeMostRecentTransaction" sap:VirtualizedContainerService.HintSize="549.3333333333334,57.333333333333336" sap2010:WorkflowViewState.IdRef="If_15">
-                      <sap:WorkflowViewStateService.ViewState>
-                        <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                          <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
-                        </scg:Dictionary>
-                      </sap:WorkflowViewStateService.ViewState>
-                      <If.Then>
-                        <Sequence DisplayName="Then" sap:VirtualizedContainerService.HintSize="468,568" sap2010:WorkflowViewState.IdRef="Sequence_86">
-                          <Sequence.Variables>
-                            <Variable x:TypeArguments="x:String" Name="strMostRecentTransaction" />
-                          </Sequence.Variables>
-                          <sap:WorkflowViewStateService.ViewState>
-                            <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-                              <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                            </scg:Dictionary>
-                          </sap:WorkflowViewStateService.ViewState>
-                          <ui:InputDialog Options="{x:Null}" OptionsString="{x:Null}" sap2010:Annotation.AnnotationText="Dialog box prompts user to input date which gets assigned to strMostRecentTransaction" DisplayName="Input Dialog" sap:VirtualizedContainerService.HintSize="434,322.6666666666667" sap2010:WorkflowViewState.IdRef="InputDialog_1" IsPassword="False" Label="Gimme a date in the following format: dddd, d MMMM yyyy (EG Friday, 5 January 2024 / Tuesday 30 July 2024) I'll grab records from that date" Title="Looks like I couldn't find the record I was looking for">
-                            <ui:InputDialog.Result>
-                              <OutArgument x:TypeArguments="x:String">[strMostRecentTransaction]</OutArgument>
-                            </ui:InputDialog.Result>
-                            <sap:WorkflowViewStateService.ViewState>
-                              <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                                <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                                <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
-                                <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-                              </scg:Dictionary>
-                            </sap:WorkflowViewStateService.ViewState>
-                          </ui:InputDialog>
-                          <Assign sap2010:Annotation.AnnotationText="Assigns Newest Transaction + offset days to strNewestTransaction to datetimeMostRecentTransaction&#xA;&#xA;gets inputted in the 'From' field on the webpage" DisplayName="Assign most recent transaction + offset days to dateTime for table manipulation" sap:VirtualizedContainerService.HintSize="434,185.33333333333334" sap2010:WorkflowViewState.IdRef="Assign_38">
-                            <Assign.To>
-                              <OutArgument x:TypeArguments="s:DateTime">[out_DateTimeMostRecentTransaction]</OutArgument>
-                            </Assign.To>
-                            <Assign.Value>
-                              <InArgument x:TypeArguments="s:DateTime">[DateTime.ParseExact(io_strMostRecentTransaction, "dddd, d MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture).AddDays(in_HomeloanDataOffsetDays)]</InArgument>
-                            </Assign.Value>
-                            <sap:WorkflowViewStateService.ViewState>
-                              <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                                <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                                <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
-                                <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-                              </scg:Dictionary>
-                            </sap:WorkflowViewStateService.ViewState>
-                          </Assign>
-                        </Sequence>
-                      </If.Then>
-                      <If.Else>
-                        <Sequence DisplayName="Else" sap:VirtualizedContainerService.HintSize="468,344.6666666666667" sap2010:WorkflowViewState.IdRef="Sequence_87">
-                          <sap:WorkflowViewStateService.ViewState>
-                            <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-                              <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                            </scg:Dictionary>
-                          </sap:WorkflowViewStateService.ViewState>
-                          <Assign DisplayName="Homeloan Dataset: Assign date from object to DT" sap:VirtualizedContainerService.HintSize="434,117.33333333333333" sap2010:WorkflowViewState.IdRef="Assign_46">
-                            <Assign.To>
-                              <OutArgument x:TypeArguments="s:DateTime">[out_DateTimeMostRecentTransaction]</OutArgument>
-                            </Assign.To>
-                            <Assign.Value>
-                              <InArgument x:TypeArguments="s:DateTime">[Convert.ToDateTime(dtRawData.Rows(0).Item(2))]</InArgument>
-                            </Assign.Value>
-                          </Assign>
-                          <ui:LogMessage DisplayName="Log Message: &quot;Most recent transaction in Homeloan workbook:  &quot; &amp; DateTime.ParseExact(strNewestTransaction, &quot;dddd, d MMMM yyyy&quot;, System.Globalization.CultureInfo.InvariantCulture).ToString(&quot;dddd, d MMMM yyyy&quot;)" sap:VirtualizedContainerService.HintSize="434,167.33333333333334" sap2010:WorkflowViewState.IdRef="LogMessage_25" Level="Warn" Message="[&quot;Most recent transaction in &quot; &amp; in_SheetName &amp; &quot; workbook: &quot; + out_DateTimeMostRecentTransaction.ToString]">
-                            <sap:WorkflowViewStateService.ViewState>
-                              <scg:Dictionary x:TypeArguments="x:String, x:Object">
-                                <x:Boolean x:Key="IsPinned">False</x:Boolean>
-                              </scg:Dictionary>
-                            </sap:WorkflowViewStateService.ViewState>
-                          </ui:LogMessage>
-                        </Sequence>
-                      </If.Else>
-                    </If>
-                    <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" sap2010:Annotation.AnnotationText="Cycles  through the datatable and converts objects to datatypes" DataTable="[dtRawData]" DisplayName="For Each Row in Data Table" sap:VirtualizedContainerService.HintSize="549.3333333333334,1278" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
+                    <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" sap2010:Annotation.AnnotationText="Cycles  through the datatable and converts objects to datatypes" DataTable="[dtRawData]" DisplayName="For Each Row in Data Table" sap:VirtualizedContainerService.HintSize="550.6666666666666,1336.6666666666667" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
                       <ui:ForEachRow.Body>
                         <ActivityAction x:TypeArguments="sd:DataRow">
                           <ActivityAction.Argument>
                             <DelegateInArgument x:TypeArguments="sd:DataRow" Name="CurrentRow" />
                           </ActivityAction.Argument>
-                          <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="547.3333333333334,1072.6666666666667" sap2010:WorkflowViewState.IdRef="Sequence_124">
+                          <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="548.6666666666666,1127.3333333333333" sap2010:WorkflowViewState.IdRef="Sequence_124">
                             <sap:WorkflowViewStateService.ViewState>
                               <scg:Dictionary x:TypeArguments="x:String, x:Object">
                                 <x:Boolean x:Key="IsExpanded">True</x:Boolean>
                                 <x:Boolean x:Key="IsPinned">False</x:Boolean>
                               </scg:Dictionary>
                             </sap:WorkflowViewStateService.ViewState>
-                            <If sap2010:Annotation.AnnotationText="Checks row contains value (by checking balance). Ignores if true, Else adds" Condition="[String.IsNullOrWhiteSpace(CurrentRow(&quot;Balance&quot;).ToString)]" DisplayName="If Balance is empty" sap:VirtualizedContainerService.HintSize="513.3333333333334,1012.6666666666666" sap2010:WorkflowViewState.IdRef="If_16">
+                            <If sap2010:Annotation.AnnotationText="Checks row contains value (by checking balance). Ignores if true, Else adds" Condition="[String.IsNullOrWhiteSpace(CurrentRow(&quot;Balance&quot;).ToString)]" DisplayName="If Balance is empty" sap:VirtualizedContainerService.HintSize="514.6666666666666,1063.3333333333333" sap2010:WorkflowViewState.IdRef="If_16">
                               <sap:WorkflowViewStateService.ViewState>
                                 <scg:Dictionary x:TypeArguments="x:String, x:Object">
                                   <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
@@ -382,7 +315,7 @@
                                 </scg:Dictionary>
                               </sap:WorkflowViewStateService.ViewState>
                               <If.Then>
-                                <Sequence DisplayName="Then" sap:VirtualizedContainerService.HintSize="511.3333333333333,90.66666666666667" sap2010:WorkflowViewState.IdRef="Sequence_126">
+                                <Sequence DisplayName="Then" sap:VirtualizedContainerService.HintSize="512.6666666666666,94.66666666666667" sap2010:WorkflowViewState.IdRef="Sequence_126">
                                   <sap:WorkflowViewStateService.ViewState>
                                     <scg:Dictionary x:TypeArguments="x:String, x:Object">
                                       <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -391,13 +324,13 @@
                                 </Sequence>
                               </If.Then>
                               <If.Else>
-                                <Sequence DisplayName="Else" sap:VirtualizedContainerService.HintSize="511.3333333333333,760.6666666666666" sap2010:WorkflowViewState.IdRef="Sequence_127">
+                                <Sequence DisplayName="Else" sap:VirtualizedContainerService.HintSize="512.6666666666666,803.3333333333334" sap2010:WorkflowViewState.IdRef="Sequence_127">
                                   <sap:WorkflowViewStateService.ViewState>
                                     <scg:Dictionary x:TypeArguments="x:String, x:Object">
                                       <x:Boolean x:Key="IsExpanded">True</x:Boolean>
                                     </scg:Dictionary>
                                   </sap:WorkflowViewStateService.ViewState>
-                                  <ui:MultipleAssign sap2010:Annotation.AnnotationText="Creates and assigns column values to new datarow" DisplayName="Multiple Assign" sap:VirtualizedContainerService.HintSize="477.3333333333333,456" sap2010:WorkflowViewState.IdRef="MultipleAssign_1">
+                                  <ui:MultipleAssign sap2010:Annotation.AnnotationText="Creates and assigns column values to new datarow" DisplayName="Multiple Assign" sap:VirtualizedContainerService.HintSize="478.6666666666667,490.6666666666667" sap2010:WorkflowViewState.IdRef="MultipleAssign_1">
                                     <ui:MultipleAssign.AssignOperations>
                                       <scg:List x:TypeArguments="ui:AssignOperation" Capacity="16">
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_10">
@@ -405,12 +338,12 @@
                                             <OutArgument x:TypeArguments="sd:DataRow">[newRow]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="sd:DataRow">[dtExcelDataTabe.NewRow()]</InArgument>
+                                            <InArgument x:TypeArguments="sd:DataRow">[dtCallCenterDataTabe.NewRow()]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_1">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("BSB Number")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Call Id")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
                                             <InArgument x:TypeArguments="x:Object">[CurrentRow(0)]</InArgument>
@@ -418,7 +351,7 @@
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_2">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Account Number")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Agent")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
                                             <InArgument x:TypeArguments="x:Object">[CurrentRow(1)]</InArgument>
@@ -426,7 +359,7 @@
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_3">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Transaction Date")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Date")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
                                             <InArgument x:TypeArguments="x:Object">[DateTime.Parse(CurrentRow(2).ToString,System.Globalization.CultureInfo.InvariantCulture)]</InArgument>
@@ -434,15 +367,15 @@
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_4">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Narration")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Time")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(3)]</InArgument>
+                                            <InArgument x:TypeArguments="x:Object">[DateTime.ParseExact(CurrentRow(3).ToString.Trim,{"H:mm:ss", "HH:mm:ss"},System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None)]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_5">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Cheque Number")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Topic")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
                                             <InArgument x:TypeArguments="x:Object">[CurrentRow(4)]</InArgument>
@@ -450,34 +383,42 @@
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_6">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Debit")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Answered (Y/N)")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="x:Object">[If((CurrentRow(5)).ToString.Equals(string.Empty), nothing, Convert.ToDecimal(CurrentRow(5)))]</InArgument>
+                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(5)]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_7">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Credit")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Resolved")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="x:Object">[If((CurrentRow(6)).ToString.Equals(string.Empty), nothing, Convert.ToDecimal(CurrentRow(6)))]</InArgument>
+                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(6)]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_8">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Balance")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Speed of answer in seconds")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="x:Object">[Convert.ToDecimal(CurrentRow(7))]</InArgument>
+                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(7)]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                         <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_9">
                                           <ui:AssignOperation.To>
-                                            <OutArgument x:TypeArguments="x:Object">[newRow("Transaction Type")]</OutArgument>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("AvgTalkDuration")]</OutArgument>
                                           </ui:AssignOperation.To>
                                           <ui:AssignOperation.Value>
-                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(8).ToString]</InArgument>
+                                            <InArgument x:TypeArguments="x:Object">[DateTime.ParseExact(CurrentRow(8).ToString.Trim,{"H:mm:ss", "HH:mm:ss"},System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None)]</InArgument>
+                                          </ui:AssignOperation.Value>
+                                        </ui:AssignOperation>
+                                        <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_11">
+                                          <ui:AssignOperation.To>
+                                            <OutArgument x:TypeArguments="x:Object">[newRow("Satisfaction rating")]</OutArgument>
+                                          </ui:AssignOperation.To>
+                                          <ui:AssignOperation.Value>
+                                            <InArgument x:TypeArguments="x:Object">[CurrentRow(9)]</InArgument>
                                           </ui:AssignOperation.Value>
                                         </ui:AssignOperation>
                                       </scg:List>
@@ -490,7 +431,7 @@
                                       </scg:Dictionary>
                                     </sap:WorkflowViewStateService.ViewState>
                                   </ui:MultipleAssign>
-                                  <ui:AddDataRow ArrayRow="{x:Null}" sap2010:Annotation.AnnotationText="Adds the processed data row to the datatable" DataTable="[dtExcelDataTabe]" DisplayName="Add Data Row to datatable" sap:VirtualizedContainerService.HintSize="477.3333333333333,244.66666666666666" sap2010:WorkflowViewState.IdRef="AddDataRow_1">
+                                  <ui:AddDataRow ArrayRow="{x:Null}" sap2010:Annotation.AnnotationText="Adds the processed data row to the datatable" DataTable="[dtCallCenterDataTabe]" DisplayName="Add Data Row to datatable" sap:VirtualizedContainerService.HintSize="478.6666666666667,248.66666666666666" sap2010:WorkflowViewState.IdRef="AddDataRow_1">
                                     <ui:AddDataRow.DataRow>
                                       <InArgument x:TypeArguments="sd:DataRow">
                                         <VisualBasicValue x:TypeArguments="sd:DataRow" ExpressionText="newRow" sap2010:WorkflowViewState.IdRef="VisualBasicValue`1_1" />
