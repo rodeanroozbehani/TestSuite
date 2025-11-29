@@ -105,7 +105,7 @@
       <AssemblyReference>System.Private.Xml</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Open applications used in the process and do necessary initialization procedures (e.g., login)." DisplayName="Initialize All Applications" sap:VirtualizedContainerService.HintSize="1127.3333333333333,651.3333333333334" sap2010:WorkflowViewState.IdRef="Sequence_9">
+  <Sequence sap2010:Annotation.AnnotationText="Open applications used in the process and do necessary initialization procedures (e.g., login)." DisplayName="Initialize All Applications" sap:VirtualizedContainerService.HintSize="968,651.3333333333334" sap2010:WorkflowViewState.IdRef="Sequence_9">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Name="io_RawCallCenterFile" />
     </Sequence.Variables>
@@ -116,17 +116,17 @@
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
     <ui:LogMessage DisplayName="Log message (Initialize applications)" sap:VirtualizedContainerService.HintSize="450,176.66666666666666" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Trace" Message="[&quot;Opening applications...&quot;]" />
-    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Find Workbook - Invoke Workflow File (1. Find Workbook\Find Workbook.xaml)" sap:VirtualizedContainerService.HintSize="450,215.33333333333334" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_1" UnSafe="False" WorkflowFileName="1. Find Workbook\Find Workbook.xaml">
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Find Workbook - Invoke Workflow File (1. Workbook Processing\Find Workbook.xaml)" sap:VirtualizedContainerService.HintSize="450,215.33333333333334" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4" UnSafe="False" WorkflowFileName="1. Workbook Processing\Find Workbook.xaml">
       <ui:InvokeWorkflowFile.Arguments>
-        <OutArgument x:TypeArguments="x:String" x:Key="strRawCallCenterFile">[io_RawCallCenterFile]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="strRawCallCenterFile" />
         <InArgument x:TypeArguments="x:String" x:Key="in_FileName">[in_FileName]</InArgument>
         <InArgument x:TypeArguments="x:String" x:Key="in_FolderPath">[in_FolderPath]</InArgument>
       </ui:InvokeWorkflowFile.Arguments>
     </ui:InvokeWorkflowFile>
-    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="FormatCallCenterDataset - Invoke Workflow File (2. Homeloan Dataset\FormatCallCenterDataset.xaml)" sap:VirtualizedContainerService.HintSize="450,206" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_2" UnSafe="False" WorkflowFileName="2. Homeloan Dataset\FormatCallCenterDataset.xaml">
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="FormatCallCenterDataset - Invoke Workflow File (1. Workbook Processing\FormatCallCenterDataset.xaml)" sap:VirtualizedContainerService.HintSize="450,206" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_3" UnSafe="False" WorkflowFileName="1. Workbook Processing\FormatCallCenterDataset.xaml">
       <ui:InvokeWorkflowFile.Arguments>
-        <OutArgument x:TypeArguments="sd:DataTable" x:Key="dtCallCenterDataTabe">[io_CallCenterFile]</OutArgument>
-        <InArgument x:TypeArguments="x:String" x:Key="in_RawCallCenterFile">[io_RawCallCenterFile]</InArgument>
+        <OutArgument x:TypeArguments="sd:DataTable" x:Key="dtCallCenterDataTabe" />
+        <InArgument x:TypeArguments="x:String" x:Key="in_RawCallCenterFile" />
       </ui:InvokeWorkflowFile.Arguments>
     </ui:InvokeWorkflowFile>
   </Sequence>
