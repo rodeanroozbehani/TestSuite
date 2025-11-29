@@ -199,16 +199,12 @@
       <AssemblyReference>Microsoft.Extensions.DependencyModel</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap:VirtualizedContainerService.HintSize="2720,4893.333333333333" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <Sequence sap:VirtualizedContainerService.HintSize="750.6666666666666,4964" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Name="io_strMostRecentTransaction" />
       <Variable x:TypeArguments="sd:DataRow" Name="newRow" />
       <Variable x:TypeArguments="sd:DataTable" Name="dtRawData" />
-      <Variable x:TypeArguments="x:String" Name="in_SheetName">
-        <Variable.Default>
-          <Literal x:TypeArguments="x:String">Sheet1</Literal>
-        </Variable.Default>
-      </Variable>
+      <Variable x:TypeArguments="x:String" Default="Sheet1" Name="in_SheetName" />
       <Variable x:TypeArguments="x:Int32" Name="in_SpeedOfAnswerSeconds" />
       <Variable x:TypeArguments="x:Int32" Name="in_SatisfactionRating" />
       <Variable x:TypeArguments="x:String" Name="in_ResolvedYN" />
@@ -223,7 +219,7 @@
         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
-    <Sequence sap2010:Annotation.AnnotationText="Reads raw dataset: Find most recent transaction and converts to consumable DT" DisplayName="Sequence: Read Excel Dataset" sap:VirtualizedContainerService.HintSize="750.6666666666666,4870.666666666667" sap2010:WorkflowViewState.IdRef="Sequence_121">
+    <Sequence sap2010:Annotation.AnnotationText="Reads raw dataset: Find most recent transaction and converts to consumable DT" DisplayName="Sequence: Read Excel Dataset" sap:VirtualizedContainerService.HintSize="750.6666666666666,4941.333333333333" sap2010:WorkflowViewState.IdRef="Sequence_121">
       <sap:WorkflowViewStateService.ViewState>
         <scg:Dictionary x:TypeArguments="x:String, x:Object">
           <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -231,19 +227,19 @@
           <x:Boolean x:Key="IsAnnotationDocked">True</x:Boolean>
         </scg:Dictionary>
       </sap:WorkflowViewStateService.ViewState>
-      <ueab:ExcelProcessScopeX DisplayAlerts="{x:Null}" ExistingProcessAction="{x:Null}" FileConflictResolution="{x:Null}" LaunchMethod="{x:Null}" LaunchTimeout="{x:Null}" MacroSettings="{x:Null}" ProcessMode="{x:Null}" ShowExcelWindow="{x:Null}" DisplayName="Excel Process Scope" sap:VirtualizedContainerService.HintSize="716.6666666666666,4757.333333333333" sap2010:WorkflowViewState.IdRef="ExcelProcessScopeX_1">
+      <ueab:ExcelProcessScopeX DisplayAlerts="{x:Null}" ExistingProcessAction="{x:Null}" FileConflictResolution="{x:Null}" LaunchMethod="{x:Null}" LaunchTimeout="{x:Null}" MacroSettings="{x:Null}" ProcessMode="{x:Null}" ShowExcelWindow="{x:Null}" DisplayName="Excel Process Scope" sap:VirtualizedContainerService.HintSize="716.6666666666666,4828" sap2010:WorkflowViewState.IdRef="ExcelProcessScopeX_1">
         <ueab:ExcelProcessScopeX.Body>
           <ActivityAction x:TypeArguments="ui:IExcelProcess">
             <ActivityAction.Argument>
               <DelegateInArgument x:TypeArguments="ui:IExcelProcess" Name="ExcelProcessScopeTag" />
             </ActivityAction.Argument>
-            <ueab:ExcelApplicationCard Password="{x:Null}" ReadFormatting="{x:Null}" SensitivityLabel="{x:Null}" sap2010:Annotation.AnnotationText="Sorts the dataset&#xA;Gets most recent transaction&#xA;Navigates to BW page, gets the latest transactions&#xA;Adds records to dataset" CreateNewFile="False" DisplayName="Use Excel File" sap:VirtualizedContainerService.HintSize="682.6666666666666,4647.333333333333" sap2010:WorkflowViewState.IdRef="ExcelApplicationCard_1" KeepExcelFileOpen="True" ResizeWindow="None" SensitivityOperation="None" WorkbookPath="[in_RawCallCenterFile]">
+            <ueab:ExcelApplicationCard Password="{x:Null}" ReadFormatting="{x:Null}" SensitivityLabel="{x:Null}" sap2010:Annotation.AnnotationText="Sorts the dataset&#xA;Gets most recent transaction&#xA;Navigates to BW page, gets the latest transactions&#xA;Adds records to dataset" CreateNewFile="False" DisplayName="Use Excel File" sap:VirtualizedContainerService.HintSize="682.6666666666666,4718" sap2010:WorkflowViewState.IdRef="ExcelApplicationCard_1" KeepExcelFileOpen="True" ResizeWindow="None" SensitivityOperation="None" WorkbookPath="[in_RawCallCenterFile]">
               <ueab:ExcelApplicationCard.Body>
                 <ActivityAction x:TypeArguments="ue:IWorkbookQuickHandle">
                   <ActivityAction.Argument>
                     <DelegateInArgument x:TypeArguments="ue:IWorkbookQuickHandle" Name="Excel" />
                   </ActivityAction.Argument>
-                  <Sequence sap2010:Annotation.AnnotationText="Builds DataTable, reads raw data from Exccel and converts them from system objects to consumable data for the workflow" DisplayName="Sequence to get Dataset and add to workbok" sap:VirtualizedContainerService.HintSize="648.6666666666666,4289.333333333333" sap2010:WorkflowViewState.IdRef="Sequence_123">
+                  <Sequence sap2010:Annotation.AnnotationText="Builds DataTable, reads raw data from Exccel and converts them from system objects to consumable data for the workflow" DisplayName="Sequence to get Dataset and add to workbok" sap:VirtualizedContainerService.HintSize="648.6666666666666,4320" sap2010:WorkflowViewState.IdRef="Sequence_123">
                     <sap:WorkflowViewStateService.ViewState>
                       <scg:Dictionary x:TypeArguments="x:String, x:Object">
                         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -258,7 +254,7 @@
                         </scg:Dictionary>
                       </sap:WorkflowViewStateService.ViewState>
                     </ui:BuildDataTable>
-                    <ui:BuildDataTable DataTable="[dtCallCenterDataTabe]" DisplayName="Build dtExcelData" sap:VirtualizedContainerService.HintSize="614.6666666666666,96" sap2010:WorkflowViewState.IdRef="BuildDataTable_2" TableInfo="&lt;NewDataSet&gt;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xA;      &lt;xs:complexType&gt;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xA;            &lt;xs:complexType&gt;&#xA;              &lt;xs:sequence&gt;&#xA;                &lt;xs:element name=&quot;Reference&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Agent&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Time&quot; msdata:Caption=&quot;&quot; type=&quot;xs:double&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Topic&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Answered_x0020__x0028_Y_x002F_N_x0029_&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Resolved&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Speed_x0020_of_x0020_answer_x0020_in_x0020_seconds&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;AvgTalkDuration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:double&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;Satisfaction_x0020_rating&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;PriorityTag&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;SpeedCategory&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;                &lt;xs:element name=&quot;HITL&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;              &lt;/xs:sequence&gt;&#xA;            &lt;/xs:complexType&gt;&#xA;          &lt;/xs:element&gt;&#xA;        &lt;/xs:choice&gt;&#xA;      &lt;/xs:complexType&gt;&#xA;      &lt;xs:unique name=&quot;Constraint1&quot;&gt;&#xA;        &lt;xs:selector xpath=&quot;.//TableName&quot; /&gt;&#xA;        &lt;xs:field xpath=&quot;Reference&quot; /&gt;&#xA;      &lt;/xs:unique&gt;&#xA;    &lt;/xs:element&gt;&#xA;  &lt;/xs:schema&gt;&#xA;&lt;/NewDataSet&gt;">
+                    <ui:BuildDataTable DataTable="[dtCallCenterDataTabe]" DisplayName="Build dtExcelData" sap:VirtualizedContainerService.HintSize="614.6666666666666,96" sap2010:WorkflowViewState.IdRef="BuildDataTable_2" TableInfo="&lt;NewDataSet&gt;&#xD;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xD;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xD;&#xA;      &lt;xs:complexType&gt;&#xD;&#xA;        &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xD;&#xA;          &lt;xs:element name=&quot;TableName&quot;&gt;&#xD;&#xA;            &lt;xs:complexType&gt;&#xD;&#xA;              &lt;xs:sequence&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Reference&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;CallId&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Agent&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Date&quot; msdata:Caption=&quot;&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Time&quot; msdata:Caption=&quot;&quot; type=&quot;xs:double&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Topic&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Answered_x0020__x0028_Y_x002F_N_x0029_&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Resolved&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; default=&quot;&amp;quot;0.0&amp;quot;&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Speed_x0020_of_x0020_answer_x0020_in_x0020_seconds&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;AvgTalkDuration&quot; msdata:Caption=&quot;&quot; type=&quot;xs:double&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;Satisfaction_x0020_rating&quot; msdata:Caption=&quot;&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;PriorityTag&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;SpeedCategory&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;                &lt;xs:element name=&quot;HITL&quot; msdata:Caption=&quot;&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;/xs:sequence&gt;&#xD;&#xA;            &lt;/xs:complexType&gt;&#xD;&#xA;          &lt;/xs:element&gt;&#xD;&#xA;        &lt;/xs:choice&gt;&#xD;&#xA;      &lt;/xs:complexType&gt;&#xD;&#xA;      &lt;xs:unique name=&quot;Constraint1&quot;&gt;&#xD;&#xA;        &lt;xs:selector xpath=&quot;.//TableName&quot; /&gt;&#xD;&#xA;        &lt;xs:field xpath=&quot;Reference&quot; /&gt;&#xD;&#xA;      &lt;/xs:unique&gt;&#xD;&#xA;    &lt;/xs:element&gt;&#xD;&#xA;  &lt;/xs:schema&gt;&#xD;&#xA;&lt;/NewDataSet&gt;">
                       <sap:WorkflowViewStateService.ViewState>
                         <scg:Dictionary x:TypeArguments="x:String, x:Object">
                           <x:Boolean x:Key="IsPinned">False</x:Boolean>
@@ -297,13 +293,13 @@
                         </scg:List>
                       </ui:FilterDataTable.SelectColumns>
                     </ui:FilterDataTable>
-                    <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" sap2010:Annotation.AnnotationText="Cycles  through the datatable and converts objects to datatypes" DataTable="[dtRawData]" DisplayName="For Each Row in Data Table" sap:VirtualizedContainerService.HintSize="614.6666666666666,3692.6666666666665" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
+                    <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" sap2010:Annotation.AnnotationText="Cycles  through the datatable and converts objects to datatypes" DataTable="[dtRawData]" DisplayName="For Each Row in Data Table" sap:VirtualizedContainerService.HintSize="614.6666666666666,3723.3333333333335" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
                       <ui:ForEachRow.Body>
                         <ActivityAction x:TypeArguments="sd:DataRow">
                           <ActivityAction.Argument>
                             <DelegateInArgument x:TypeArguments="sd:DataRow" Name="CurrentRow" />
                           </ActivityAction.Argument>
-                          <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="612.6666666666666,3483.3333333333335" sap2010:WorkflowViewState.IdRef="Sequence_124">
+                          <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="612.6666666666666,3514" sap2010:WorkflowViewState.IdRef="Sequence_124">
                             <sap:WorkflowViewStateService.ViewState>
                               <scg:Dictionary x:TypeArguments="x:String, x:Object">
                                 <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -485,7 +481,7 @@
                                 </Sequence>
                               </If.Else>
                             </If>
-                            <ui:MultipleAssign sap2010:Annotation.AnnotationText="Creates and assigns column values to new datarow" DisplayName="Multiple Assign" sap:VirtualizedContainerService.HintSize="578.6666666666666,582.6666666666666" sap2010:WorkflowViewState.IdRef="MultipleAssign_1">
+                            <ui:MultipleAssign sap2010:Annotation.AnnotationText="Creates and assigns column values to new datarow" DisplayName="Multiple Assign" sap:VirtualizedContainerService.HintSize="578.6666666666666,613.3333333333334" sap2010:WorkflowViewState.IdRef="MultipleAssign_1">
                               <ui:MultipleAssign.AssignOperations>
                                 <scg:List x:TypeArguments="ui:AssignOperation" Capacity="16">
                                   <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_10">
@@ -499,6 +495,14 @@
                                   <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_1">
                                     <ui:AssignOperation.To>
                                       <OutArgument x:TypeArguments="x:Object">[newRow("Reference")]</OutArgument>
+                                    </ui:AssignOperation.To>
+                                    <ui:AssignOperation.Value>
+                                      <InArgument x:TypeArguments="x:Object">[CurrentRow(0)]</InArgument>
+                                    </ui:AssignOperation.Value>
+                                  </ui:AssignOperation>
+                                  <ui:AssignOperation sap2010:WorkflowViewState.IdRef="AssignOperation_15">
+                                    <ui:AssignOperation.To>
+                                      <OutArgument x:TypeArguments="x:Object">[newRow("CallId")]</OutArgument>
                                     </ui:AssignOperation.To>
                                     <ui:AssignOperation.Value>
                                       <InArgument x:TypeArguments="x:Object">[CurrentRow(0)]</InArgument>
