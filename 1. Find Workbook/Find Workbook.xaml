@@ -1,6 +1,6 @@
 <Activity mc:Ignorable="sap sap2010" x:Class="Find_Workbook" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
-    <x:Property Name="strCallCenterFile" Type="OutArgument(x:String)" />
+    <x:Property Name="strRawCallCenterFile" Type="OutArgument(x:String)" />
     <x:Property Name="in_FileName" Type="InArgument(x:String)">
       <x:Property.Attributes>
         <RequiredArgumentAttribute />
@@ -139,7 +139,7 @@
       <AssemblyReference>System.ServiceModel.Activities</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap:VirtualizedContainerService.HintSize="1526.6666666666665,2684" sap2010:WorkflowViewState.IdRef="Sequence_56">
+  <Sequence sap:VirtualizedContainerService.HintSize="1127.3333333333333,2684" sap2010:WorkflowViewState.IdRef="Sequence_56">
     <Sequence.Variables>
       <Variable x:TypeArguments="s:String[]" Name="strFiles" />
       <Variable x:TypeArguments="x:Int32" Name="intCountFiles" />
@@ -225,7 +225,7 @@
       </TryCatch>
       <Assign sap2010:Annotation.AnnotationText="Excludes files containing a tilde (~) at the beginning. Also gets all files with the specified filename" sap:VirtualizedContainerService.HintSize="522,238" sap2010:WorkflowViewState.IdRef="Assign_2">
         <Assign.To>
-          <OutArgument x:TypeArguments="x:String">[strCallCenterFile]</OutArgument>
+          <OutArgument x:TypeArguments="x:String">[strRawCallCenterFile]</OutArgument>
         </Assign.To>
         <Assign.Value>
           <InArgument x:TypeArguments="x:String">[strFiles.FirstOrDefault(Function(f) Not Path.GetFileName(f).StartsWith("~") AndAlso Path.GetFileName(f).Contains(in_FileName))]</InArgument>
