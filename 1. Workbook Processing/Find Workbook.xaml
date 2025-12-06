@@ -139,7 +139,7 @@
       <AssemblyReference>System.ServiceModel.Activities</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap:VirtualizedContainerService.HintSize="1127.3333333333333,2684" sap2010:WorkflowViewState.IdRef="Sequence_56">
+  <Sequence sap:VirtualizedContainerService.HintSize="746.6666666666666,2684" sap2010:WorkflowViewState.IdRef="Sequence_56">
     <Sequence.Variables>
       <Variable x:TypeArguments="s:String[]" Name="strFiles" />
       <Variable x:TypeArguments="x:Int32" Name="intCountFiles" />
