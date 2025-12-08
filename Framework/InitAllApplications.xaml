@@ -107,7 +107,7 @@
       <AssemblyReference>System.IO.FileSystem.DriveInfo</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Open applications used in the process and do necessary initialization procedures (e.g., login)." DisplayName="Initialize All Applications" sap:VirtualizedContainerService.HintSize="1172.6666666666665,1076.6666666666667" sap2010:WorkflowViewState.IdRef="Sequence_9">
+  <Sequence sap2010:Annotation.AnnotationText="Open applications used in the process and do necessary initialization procedures (e.g., login)." DisplayName="Initialize All Applications" sap:VirtualizedContainerService.HintSize="726.6666666666666,1019.3333333333334" sap2010:WorkflowViewState.IdRef="Sequence_9">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Name="str_CallCenterFile" />
       <Variable x:TypeArguments="x:String" Name="variable1" />
@@ -129,7 +129,7 @@
         <InArgument x:TypeArguments="x:String">[Environment.MachineName.ToString]</InArgument>
       </Assign.Value>
     </Assign>
-    <ucas:DownloadStorageFile TimeoutMS="{x:Null}" Destination="[&quot;C:\Users\&quot; &amp; strHostName &amp; &quot;\Downloads\CallCenterDataset.xlsx&quot;]" DisplayName="Download Storage File" FolderPath="Test Folder 2" sap:VirtualizedContainerService.HintSize="450,168.66666666666666" sap2010:WorkflowViewState.IdRef="DownloadStorageFile_1" Path="\CellCenterDataset.xlsx" StorageBucketName="CallCenterData" />
+    <ucas:DownloadStorageFile TimeoutMS="{x:Null}" Destination="[&quot;C:\Users\&quot; &amp; strHostName &amp; &quot;\Downloads\CallCenterDataset.xlsx&quot;]" DisplayName="Download Storage File" FolderPath="Test Suite Workflow" sap:VirtualizedContainerService.HintSize="450,168.66666666666666" sap2010:WorkflowViewState.IdRef="DownloadStorageFile_1" Path="\CellCenterDataset.xlsx" StorageBucketName="CallCenterData" />
     <Assign sap2010:Annotation.AnnotationText="Excludes files containing a tilde (~) at the beginning. Also gets all files with the specified filename" sap:VirtualizedContainerService.HintSize="450,238" sap2010:WorkflowViewState.IdRef="Assign_3">
       <Assign.To>
         <OutArgument x:TypeArguments="x:String">[str_CallCenterFile]</OutArgument>
@@ -145,30 +145,6 @@
         </scg:Dictionary>
       </sap:WorkflowViewStateService.ViewState>
     </Assign>
-    <ui:CommentOut DisplayName="Comment Out" sap:VirtualizedContainerService.HintSize="450,57.333333333333336" sap2010:WorkflowViewState.IdRef="CommentOut_1">
-      <ui:CommentOut.Body>
-        <Sequence DisplayName="Ignored Activities" sap:VirtualizedContainerService.HintSize="450,266" sap2010:WorkflowViewState.IdRef="Sequence_10">
-          <sap:WorkflowViewStateService.ViewState>
-            <scg:Dictionary x:TypeArguments="x:String, x:Object">
-              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
-            </scg:Dictionary>
-          </sap:WorkflowViewStateService.ViewState>
-          <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Find Workbook - Invoke Workflow File (1. Workbook Processing\Find Workbook.xaml)" sap:VirtualizedContainerService.HintSize="416,206" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_4" UnSafe="False" WorkflowFileName="1. Workbook Processing\Find Workbook.xaml">
-            <ui:InvokeWorkflowFile.Arguments>
-              <OutArgument x:TypeArguments="x:String" x:Key="strRawCallCenterFile">[str_CallCenterFile]</OutArgument>
-              <InArgument x:TypeArguments="x:String" x:Key="in_FileName">[in_FileName]</InArgument>
-              <InArgument x:TypeArguments="x:String" x:Key="in_FolderPath">[in_FolderPath]</InArgument>
-            </ui:InvokeWorkflowFile.Arguments>
-          </ui:InvokeWorkflowFile>
-        </Sequence>
-      </ui:CommentOut.Body>
-      <sap:WorkflowViewStateService.ViewState>
-        <scg:Dictionary x:TypeArguments="x:String, x:Object">
-          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
-          <x:Boolean x:Key="IsPinned">False</x:Boolean>
-        </scg:Dictionary>
-      </sap:WorkflowViewStateService.ViewState>
-    </ui:CommentOut>
     <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="FormatCallCenterDataset - Invoke Workflow File (1. Workbook Processing\FormatCallCenterDataset.xaml)" sap:VirtualizedContainerService.HintSize="450,206" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_3" UnSafe="False" WorkflowFileName="1. Workbook Processing\FormatCallCenterDataset.xaml">
       <ui:InvokeWorkflowFile.Arguments>
         <OutArgument x:TypeArguments="sd:DataTable" x:Key="dtCallCenterDataTabe">[io_CallCenterFile]</OutArgument>
