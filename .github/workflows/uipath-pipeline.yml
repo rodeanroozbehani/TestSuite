@@ -16,49 +16,52 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Install UiPath CLI
+    - name: Install UiPath CLI via winget
       run: |
-        Write-Host "=== Installing UiPath CLI ==="
+        Write-Host "=== Installing UiPath CLI via winget ==="
         
-        # Download MSI installer directly
-        $cliUrl = "https://download.uipath.com/versions/23.10.8753.32995/UiPathCLI.msi"
-        $msiPath = "$env:TEMP\UiPathCLI.msi"
+        # Try winget first
+        winget install --id UiPath.Studio --silent --accept-source-agreements --accept-package-agreements
         
-        Write-Host "Downloading UiPath CLI from: $cliUrl"
+        # Wait for installation to complete
+        Start-Sleep -Seconds 30
         
-        try {
-          Invoke-WebRequest -Uri $cliUrl -OutFile $msiPath -UseBasicParsing
-          Write-Host "Download successful"
-          
-          Write-Host "Installing MSI..."
-          $installArgs = @("/i", $msiPath, "/quiet", "/norestart")
-          Start-Process msiexec.exe -ArgumentList $installArgs -Wait -NoNewWindow
-          
-          Write-Host "Adding to PATH..."
-          $cliPath = "C:\Program Files\UiPath\Studio\uipcli"
-          if (Test-Path $cliPath) {
-            $env:PATH = "$env:PATH;$cliPath"
-            [Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Process")
-          } else {
-            Write-Host "WARNING: Default path not found, searching for uipcli..."
-            $found = Get-ChildItem "C:\Program Files" -Recurse -Filter "uipcli.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($found) {
-              $cliPath = $found.DirectoryName
-              Write-Host "Found at: $cliPath"
-              $env:PATH = "$env:PATH;$cliPath"
-              [Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Process")
-            }
+        # Find uipcli.exe
+        Write-Host "Searching for uipcli.exe..."
+        $cliPaths = @(
+          "C:\Program Files\UiPath\Studio\uipcli.exe",
+          "C:\Program Files (x86)\UiPath\Studio\uipcli.exe",
+          "$env:LOCALAPPDATA\Programs\UiPath\Studio\uipcli.exe"
+        )
+        
+        $foundPath = $null
+        foreach ($path in $cliPaths) {
+          $dir = Split-Path $path -Parent
+          if (Test-Path $path) {
+            $foundPath = $dir
+            Write-Host "Found uipcli at: $path"
+            break
           }
+        }
+        
+        if (-not $foundPath) {
+          Write-Host "Not found in default locations, searching entire Program Files..."
+          $found = Get-ChildItem "C:\Program Files" -Recurse -Filter "uipcli.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($found) {
+            $foundPath = $found.DirectoryName
+            Write-Host "Found at: $foundPath"
+          }
+        }
+        
+        if ($foundPath) {
+          $env:PATH = "$foundPath;$env:PATH"
+          Write-Host "Added to PATH: $foundPath"
           
-          # Verify installation
-          Write-Host "Verifying installation..."
-          & uipcli --version
-          
+          # Verify
+          uipcli --version
           Write-Host "=== UiPath CLI installed successfully ==="
-          
-        } catch {
-          Write-Host "ERROR: Failed to download or install CLI"
-          Write-Host $_.Exception.Message
+        } else {
+          Write-Host "ERROR: Could not find uipcli.exe after installation"
           exit 1
         }
       shell: powershell
@@ -137,25 +140,37 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Install UiPath CLI
+    - name: Install UiPath CLI via winget
       run: |
         Write-Host "=== Installing UiPath CLI ==="
-        $cliUrl = "https://download.uipath.com/versions/23.10.8753.32995/UiPathCLI.msi"
-        $msiPath = "$env:TEMP\UiPathCLI.msi"
-        Invoke-WebRequest -Uri $cliUrl -OutFile $msiPath -UseBasicParsing
-        $installArgs = @("/i", $msiPath, "/quiet", "/norestart")
-        Start-Process msiexec.exe -ArgumentList $installArgs -Wait -NoNewWindow
-        $cliPath = "C:\Program Files\UiPath\Studio\uipcli"
-        if (Test-Path $cliPath) {
-          $env:PATH = "$env:PATH;$cliPath"
-        } else {
-          $found = Get-ChildItem "C:\Program Files" -Recurse -Filter "uipcli.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($found) {
-            $env:PATH = "$env:PATH;$($found.DirectoryName)"
+        winget install --id UiPath.Studio --silent --accept-source-agreements --accept-package-agreements
+        Start-Sleep -Seconds 30
+        $cliPaths = @(
+          "C:\Program Files\UiPath\Studio\uipcli.exe",
+          "C:\Program Files (x86)\UiPath\Studio\uipcli.exe",
+          "$env:LOCALAPPDATA\Programs\UiPath\Studio\uipcli.exe"
+        )
+        $foundPath = $null
+        foreach ($path in $cliPaths) {
+          $dir = Split-Path $path -Parent
+          if (Test-Path $path) {
+            $foundPath = $dir
+            break
           }
         }
-        uipcli --version
-        Write-Host "=== CLI installed ==="
+        if (-not $foundPath) {
+          $found = Get-ChildItem "C:\Program Files" -Recurse -Filter "uipcli.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($found) {
+            $foundPath = $found.DirectoryName
+          }
+        }
+        if ($foundPath) {
+          $env:PATH = "$foundPath;$env:PATH"
+          uipcli --version
+        } else {
+          Write-Host "ERROR: Could not find uipcli.exe"
+          exit 1
+        }
       shell: powershell
     
     - name: Package UiPath Project
