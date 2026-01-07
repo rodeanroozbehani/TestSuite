@@ -26,7 +26,8 @@ jobs:
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
         New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
         
-        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
+        # Using a known working version
+        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
         $zipFile = Join-Path $tempDir "cli.zip"
         
         Write-Host "Downloading from: $downloadUrl"
@@ -58,7 +59,6 @@ jobs:
         
         if (Test-Path $projectPath) {
           Write-Host "SUCCESS: project.json found"
-          Get-Content $projectPath | Write-Host
         } else {
           Write-Host "ERROR: project.json not found at $projectPath"
           Write-Host "Repository contents:"
@@ -103,14 +103,15 @@ jobs:
       run: |
         Write-Host ""
         Write-Host "========================================"
-        Write-Host "        TEST EXECUTION SUMMARY"
+        Write-Host "TEST EXECUTION SUMMARY"
         Write-Host "========================================"
         
-        if ("${{ steps.run_tests.outcome }}" -eq "success") {
-          Write-Host "STATUS: PASSED ✓"
+        $outcome = "${{ steps.run_tests.outcome }}"
+        if ($outcome -eq "success") {
+          Write-Host "STATUS: PASSED"
           Write-Host "Safe to merge and deploy"
         } else {
-          Write-Host "STATUS: FAILED ✗"
+          Write-Host "STATUS: FAILED"
           Write-Host "Do NOT merge until tests pass"
         }
         
@@ -133,7 +134,7 @@ jobs:
         $cliDir = "C:\uipath-cli"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
         New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
-        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
+        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
         $zipFile = Join-Path $tempDir "cli.zip"
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -UseBasicParsing
@@ -196,7 +197,7 @@ jobs:
       run: |
         Write-Host ""
         Write-Host "========================================"
-        Write-Host "       DEPLOYMENT SUMMARY"
+        Write-Host "DEPLOYMENT SUMMARY"
         Write-Host "========================================"
         Write-Host "Branch: ${{ github.ref }}"
         Write-Host "Commit: ${{ github.sha }}"
