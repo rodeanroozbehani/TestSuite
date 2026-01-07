@@ -1,0 +1,228 @@
+name: UiPath CI/CD Pipeline
+
+on:
+  # Run on pull requests to Release branch
+  pull_request:
+    branches:
+      - Release
+  # Run on pushes to Release branch (after PR merge)
+  push:
+    branches:
+      - Release
+
+jobs:
+  # Job 1: Test (runs on both PR and push)
+  test:
+    runs-on: windows-latest
+    
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    # Step 2: Setup UiPath CLI
+    - name: Setup UiPath CLI
+      run: |
+        Write-Host "Downloading UiPath CLI..."
+        $ProgressPreference = 'SilentlyContinue'
+        
+        # Download UiPath CLI
+        Invoke-WebRequest -Uri "https://www.myget.org/F/uipath-dev/api/v2/package/UiPath.CLI.Windows/23.10.8753.32995" -OutFile "uipath-cli.zip"
+        
+        # Extract CLI
+        Expand-Archive -Path "uipath-cli.zip" -DestinationPath "uipath-cli" -Force
+        
+        Write-Host "UiPath CLI installed successfully"
+      shell: powershell
+    
+    # Step 3: Verify project structure
+    - name: Verify Project Structure
+      run: |
+        Write-Host "Checking project structure..."
+        
+        if (Test-Path "${{ github.workspace }}\TestSuite\project.json") {
+          Write-Host "✓ project.json found in TestSuite folder"
+        } else {
+          Write-Host "✗ project.json not found in TestSuite folder"
+          Write-Host "Repository structure:"
+          Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Depth 2 | Select-Object FullName | Write-Host
+          exit 1
+        }
+      shell: powershell
+    
+    # Step 4: Run UiPath Tests
+    - name: Run UiPath Tests
+      id: run_tests
+      run: |
+        Write-Host "Running UiPath tests from 'Tests' folder..."
+        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
+        
+        # Navigate to project folder
+        cd "${{ github.workspace }}\TestSuite"
+        
+        # Run tests - targeting the "Tests" folder
+        & $env:UIPATH_CLI_PATH test run `
+          --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
+          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+          --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+          --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          --testTarget "Tests"
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "✗ Tests failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+        
+        Write-Host "✓ All tests passed successfully"
+      shell: powershell
+    
+    # Step 5: Test Summary
+    - name: Test Summary
+      if: always()
+      run: |
+        Write-Host "`n========================================="
+        Write-Host "Test Execution Summary"
+        Write-Host "=========================================`n"
+        
+        if ("${{ steps.run_tests.outcome }}" -eq "success") {
+          Write-Host "✓ All tests passed"
+          Write-Host "✓ Safe to merge and deploy"
+        } else {
+          Write-Host "✗ Tests failed"
+          Write-Host "✗ Do NOT merge until tests pass"
+        }
+        
+        Write-Host "`n========================================="
+      shell: powershell
+
+  # Job 2: Deploy (only runs on push to Release, after PR merge)
+  deploy:
+    needs: test
+    runs-on: windows-latest
+    # Only run this job when pushing to Release (not on PRs)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Release'
+    
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    # Step 2: Setup UiPath CLI
+    - name: Setup UiPath CLI
+      run: |
+        Write-Host "Downloading UiPath CLI..."
+        $ProgressPreference = 'SilentlyContinue'
+        
+        Invoke-WebRequest -Uri "https://www.myget.org/F/uipath-dev/api/v2/package/UiPath.CLI.Windows/23.10.8753.32995" -OutFile "uipath-cli.zip"
+        Expand-Archive -Path "uipath-cli.zip" -DestinationPath "uipath-cli" -Force
+        
+        Write-Host "UiPath CLI installed successfully"
+      shell: powershell
+    
+    # Step 3: Package the project
+    - name: Package UiPath Project
+      run: |
+        Write-Host "Packaging UiPath project..."
+        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
+        
+        # Create output directory
+        New-Item -Path "${{ github.workspace }}\output" -ItemType Directory -Force
+        
+        # Navigate to project folder
+        cd "${{ github.workspace }}\TestSuite"
+        
+        # Package the project
+        & $env:UIPATH_CLI_PATH package pack `
+          --outputPath "${{ github.workspace }}\output" `
+          --version auto
+        
+        Write-Host "✓ Packaging completed"
+        
+        # List generated packages
+        Write-Host "Generated packages:"
+        Get-ChildItem "${{ github.workspace }}\output" | Select-Object Name, Length | Write-Host
+      shell: powershell
+    
+    # Step 4: Deploy to Orchestrator
+    - name: Deploy to UiPath Orchestrator
+      run: |
+        Write-Host "Deploying to UiPath Orchestrator..."
+        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
+        
+        # Get the package file
+        $packageFile = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
+        
+        if ($packageFile) {
+          Write-Host "Deploying package: $($packageFile.Name)"
+          Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
+          
+          & $env:UIPATH_CLI_PATH package deploy `
+            --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+            --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+            --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+            --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+            --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+            --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+            --packagePath "$($packageFile.FullName)"
+          
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "✓ Deployment completed successfully!"
+          } else {
+            Write-Host "✗ Deployment failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+        } else {
+          Write-Host "✗ Error: No package file found in output directory"
+          exit 1
+        }
+      shell: powershell
+    
+    # Step 5: Deployment Summary
+    - name: Deployment Summary
+      if: always()
+      run: |
+        Write-Host "`n========================================="
+        Write-Host "Deployment Summary"
+        Write-Host "=========================================`n"
+        
+        Write-Host "Branch: ${{ github.ref }}"
+        Write-Host "Commit: ${{ github.sha }}"
+        Write-Host "Deployed by: ${{ github.actor }}"
+        Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
+        
+        Write-Host "`n✓ Package deployed to Orchestrator"
+        Write-Host "`n========================================="
+      shell: powershell
+```
+
+## Key Changes:
+
+1. **Two separate jobs**: `test` and `deploy`
+2. **Tests run on**: PRs to `Release` AND pushes to `Release`
+3. **Deploy only runs on**: Pushes to `Release` (after PR is merged)
+4. **Test target changed to**: `"Tests"` (matching your folder name)
+
+## Your New Workflow:
+```
+1. Work on develop branch
+   ↓
+2. Create PR: develop → Release
+   ↓
+3. GitHub Actions automatically runs TESTS
+   ↓
+4. Tests PASS ✓ → Green checkmark on PR, safe to merge
+   Tests FAIL ✗ → Red X on PR, can't merge (or shouldn't)
+   ↓
+5. You merge the PR
+   ↓
+6. GitHub Actions runs again on Release branch
+   ↓
+7. Tests run again (verification)
+   ↓
+8. Package & Deploy to Orchestrator
