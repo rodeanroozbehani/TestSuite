@@ -16,42 +16,53 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Setup UiPath CLI
+    - name: Download and Setup UiPath CLI
       run: |
-        Write-Host "Downloading UiPath CLI..."
+        Write-Host "=== Installing UiPath CLI from NuGet ==="
         
-        # Create temp directory
-        $tempDir = "$env:TEMP\uipath-cli"
-        New-Item -Path $tempDir -ItemType Directory -Force
+        $tempDir = Join-Path $env:TEMP "uipath-cli-install"
+        $cliDir = "C:\uipath-cli"
         
-        # Download CLI from NuGet
-        $cliUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
-        $zipPath = "$tempDir\uipath-cli.zip"
+        New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
+        New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
         
-        Invoke-WebRequest -Uri $cliUrl -OutFile $zipPath
+        # Using a known working version
+        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
+        $zipFile = Join-Path $tempDir "cli.zip"
         
-        # Extract
-        Expand-Archive -Path $zipPath -DestinationPath $tempDir -Force
+        Write-Host "Downloading from: $downloadUrl"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -UseBasicParsing
         
-        # Add to PATH
-        $cliPath = "$tempDir\tools"
-        $env:PATH = "$cliPath;$env:PATH"
+        Write-Host "Extracting CLI..."
+        Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
         
-        # Verify
-        & "$cliPath\uipcli.exe" --version
+        Write-Host "Setting up CLI..."
+        Copy-Item -Path "$tempDir\tools\*" -Destination $cliDir -Recurse -Force
         
-        Write-Host "UiPath CLI installed successfully"
+        $cliExe = Join-Path $cliDir "uipcli.exe"
+        Write-Host "CLI location: $cliExe"
+        
+        if (Test-Path $cliExe) {
+          & $cliExe --version
+          Write-Host "=== UiPath CLI installed successfully ==="
+        } else {
+          Write-Host "ERROR: CLI executable not found!"
+          exit 1
+        }
       shell: powershell
     
     - name: Verify Project Structure
       run: |
-        Write-Host "Checking project structure..."
-        if (Test-Path "${{ github.workspace }}\TestSuite\project.json") {
-          Write-Host "Project file found in TestSuite folder"
+        Write-Host "=== Verifying project structure ==="
+        $projectPath = "${{ github.workspace }}\TestSuite\project.json"
+        
+        if (Test-Path $projectPath) {
+          Write-Host "SUCCESS: project.json found"
         } else {
-          Write-Host "Project file not found in TestSuite folder"
-          Write-Host "Repository structure:"
-          Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Depth 2 | Select-Object FullName | Write-Host
+          Write-Host "ERROR: project.json not found at $projectPath"
+          Write-Host "Repository contents:"
+          Get-ChildItem "${{ github.workspace }}" -Recurse -Depth 2 | Select-Object FullName
           exit 1
         }
       shell: powershell
@@ -59,16 +70,16 @@ jobs:
     - name: Run UiPath Tests
       id: run_tests
       run: |
-        Write-Host "Running UiPath tests from Tests folder..."
+        Write-Host "=== Running UiPath Tests ==="
         
-        # Set CLI path
-        $tempDir = "$env:TEMP\uipath-cli"
-        $cliPath = "$tempDir\tools"
-        $env:PATH = "$cliPath;$env:PATH"
-        
+        $cliExe = "C:\uipath-cli\uipcli.exe"
         cd "${{ github.workspace }}\TestSuite"
         
-        & "$cliPath\uipcli.exe" test run `
+        Write-Host "Account: ${{ secrets.UIPATH_ACCOUNT_NAME }}"
+        Write-Host "Tenant: ${{ secrets.UIPATH_TENANT_NAME }}"
+        Write-Host "Folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
+        
+        & $cliExe test run `
           --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
@@ -80,26 +91,31 @@ jobs:
           --testTarget "Tests"
         
         if ($LASTEXITCODE -ne 0) {
-          Write-Host "Tests failed with exit code $LASTEXITCODE"
+          Write-Host "ERROR: Tests failed with exit code $LASTEXITCODE"
           exit 1
         }
-        Write-Host "All tests passed successfully"
+        
+        Write-Host "SUCCESS: All tests passed"
       shell: powershell
     
     - name: Test Summary
       if: always()
       run: |
-        Write-Host "========================================="
-        Write-Host "Test Execution Summary"
-        Write-Host "========================================="
-        if ("${{ steps.run_tests.outcome }}" -eq "success") {
-          Write-Host "All tests passed"
+        Write-Host ""
+        Write-Host "========================================"
+        Write-Host "TEST EXECUTION SUMMARY"
+        Write-Host "========================================"
+        
+        $outcome = "${{ steps.run_tests.outcome }}"
+        if ($outcome -eq "success") {
+          Write-Host "STATUS: PASSED"
           Write-Host "Safe to merge and deploy"
         } else {
-          Write-Host "Tests failed"
+          Write-Host "STATUS: FAILED"
           Write-Host "Do NOT merge until tests pass"
         }
-        Write-Host "========================================="
+        
+        Write-Host "========================================"
       shell: powershell
 
   deploy:
@@ -111,56 +127,49 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Setup UiPath CLI
+    - name: Download and Setup UiPath CLI
       run: |
-        Write-Host "Downloading UiPath CLI..."
-        $tempDir = "$env:TEMP\uipath-cli"
-        New-Item -Path $tempDir -ItemType Directory -Force
-        $cliUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
-        $zipPath = "$tempDir\uipath-cli.zip"
-        Invoke-WebRequest -Uri $cliUrl -OutFile $zipPath
-        Expand-Archive -Path $zipPath -DestinationPath $tempDir -Force
-        $cliPath = "$tempDir\tools"
-        $env:PATH = "$cliPath;$env:PATH"
-        & "$cliPath\uipcli.exe" --version
-        Write-Host "UiPath CLI installed successfully"
+        Write-Host "=== Installing UiPath CLI ==="
+        $tempDir = Join-Path $env:TEMP "uipath-cli-install"
+        $cliDir = "C:\uipath-cli"
+        New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
+        New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
+        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
+        $zipFile = Join-Path $tempDir "cli.zip"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -UseBasicParsing
+        Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
+        Copy-Item -Path "$tempDir\tools\*" -Destination $cliDir -Recurse -Force
+        $cliExe = Join-Path $cliDir "uipcli.exe"
+        & $cliExe --version
+        Write-Host "=== CLI installed ==="
       shell: powershell
     
     - name: Package UiPath Project
       run: |
-        Write-Host "Packaging UiPath project..."
-        
-        $tempDir = "$env:TEMP\uipath-cli"
-        $cliPath = "$tempDir\tools"
-        $env:PATH = "$cliPath;$env:PATH"
-        
-        New-Item -Path "${{ github.workspace }}\output" -ItemType Directory -Force
+        Write-Host "=== Packaging project ==="
+        $cliExe = "C:\uipath-cli\uipcli.exe"
+        $outputDir = "${{ github.workspace }}\output"
+        New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
         cd "${{ github.workspace }}\TestSuite"
         
-        & "$cliPath\uipcli.exe" package pack `
-          --outputPath "${{ github.workspace }}\output" `
-          --version auto
+        & $cliExe package pack --outputPath $outputDir --version auto
         
-        Write-Host "Packaging completed"
         Write-Host "Generated packages:"
-        Get-ChildItem "${{ github.workspace }}\output" | Select-Object Name, Length | Write-Host
+        Get-ChildItem $outputDir | Select-Object Name, Length
       shell: powershell
     
-    - name: Deploy to UiPath Orchestrator
+    - name: Deploy to Orchestrator
       run: |
-        Write-Host "Deploying to UiPath Orchestrator..."
-        
-        $tempDir = "$env:TEMP\uipath-cli"
-        $cliPath = "$tempDir\tools"
-        $env:PATH = "$cliPath;$env:PATH"
-        
+        Write-Host "=== Deploying to Orchestrator ==="
+        $cliExe = "C:\uipath-cli\uipcli.exe"
         $packageFile = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         if ($packageFile) {
-          Write-Host "Deploying package: $($packageFile.Name)"
-          Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
+          Write-Host "Package: $($packageFile.Name)"
+          Write-Host "Folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
           
-          & "$cliPath\uipcli.exe" package deploy `
+          & $cliExe package deploy `
             --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
             --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
             --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
@@ -172,13 +181,13 @@ jobs:
             --packagePath "$($packageFile.FullName)"
           
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Deployment completed successfully!"
+            Write-Host "SUCCESS: Deployed to Orchestrator"
           } else {
-            Write-Host "Deployment failed with exit code $LASTEXITCODE"
+            Write-Host "ERROR: Deployment failed"
             exit 1
           }
         } else {
-          Write-Host "Error: No package file found in output directory"
+          Write-Host "ERROR: No package found"
           exit 1
         }
       shell: powershell
@@ -186,13 +195,13 @@ jobs:
     - name: Deployment Summary
       if: always()
       run: |
-        Write-Host "========================================="
-        Write-Host "Deployment Summary"
-        Write-Host "========================================="
+        Write-Host ""
+        Write-Host "========================================"
+        Write-Host "DEPLOYMENT SUMMARY"
+        Write-Host "========================================"
         Write-Host "Branch: ${{ github.ref }}"
         Write-Host "Commit: ${{ github.sha }}"
-        Write-Host "Deployed by: ${{ github.actor }}"
-        Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
-        Write-Host "Package deployed to Orchestrator"
-        Write-Host "========================================="
+        Write-Host "User: ${{ github.actor }}"
+        Write-Host "Folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
+        Write-Host "========================================"
       shell: powershell
