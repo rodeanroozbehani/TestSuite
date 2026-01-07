@@ -18,13 +18,27 @@ jobs:
     
     - name: Setup UiPath CLI
       run: |
-        Write-Host "Installing UiPath CLI..."
+        Write-Host "Downloading UiPath CLI..."
         
-        # Install using chocolatey (pre-installed on GitHub runners)
-        choco install uipath-cli -y --no-progress
+        # Create temp directory
+        $tempDir = "$env:TEMP\uipath-cli"
+        New-Item -Path $tempDir -ItemType Directory -Force
         
-        # Verify installation
-        uipcli --version
+        # Download CLI from NuGet
+        $cliUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
+        $zipPath = "$tempDir\uipath-cli.zip"
+        
+        Invoke-WebRequest -Uri $cliUrl -OutFile $zipPath
+        
+        # Extract
+        Expand-Archive -Path $zipPath -DestinationPath $tempDir -Force
+        
+        # Add to PATH
+        $cliPath = "$tempDir\tools"
+        $env:PATH = "$cliPath;$env:PATH"
+        
+        # Verify
+        & "$cliPath\uipcli.exe" --version
         
         Write-Host "UiPath CLI installed successfully"
       shell: powershell
@@ -46,9 +60,15 @@ jobs:
       id: run_tests
       run: |
         Write-Host "Running UiPath tests from Tests folder..."
+        
+        # Set CLI path
+        $tempDir = "$env:TEMP\uipath-cli"
+        $cliPath = "$tempDir\tools"
+        $env:PATH = "$cliPath;$env:PATH"
+        
         cd "${{ github.workspace }}\TestSuite"
         
-        uipcli test run `
+        & "$cliPath\uipcli.exe" test run `
           --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
@@ -93,19 +113,31 @@ jobs:
     
     - name: Setup UiPath CLI
       run: |
-        Write-Host "Installing UiPath CLI..."
-        choco install uipath-cli -y --no-progress
-        uipcli --version
+        Write-Host "Downloading UiPath CLI..."
+        $tempDir = "$env:TEMP\uipath-cli"
+        New-Item -Path $tempDir -ItemType Directory -Force
+        $cliUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/24.10.8901"
+        $zipPath = "$tempDir\uipath-cli.zip"
+        Invoke-WebRequest -Uri $cliUrl -OutFile $zipPath
+        Expand-Archive -Path $zipPath -DestinationPath $tempDir -Force
+        $cliPath = "$tempDir\tools"
+        $env:PATH = "$cliPath;$env:PATH"
+        & "$cliPath\uipcli.exe" --version
         Write-Host "UiPath CLI installed successfully"
       shell: powershell
     
     - name: Package UiPath Project
       run: |
         Write-Host "Packaging UiPath project..."
+        
+        $tempDir = "$env:TEMP\uipath-cli"
+        $cliPath = "$tempDir\tools"
+        $env:PATH = "$cliPath;$env:PATH"
+        
         New-Item -Path "${{ github.workspace }}\output" -ItemType Directory -Force
         cd "${{ github.workspace }}\TestSuite"
         
-        uipcli package pack `
+        & "$cliPath\uipcli.exe" package pack `
           --outputPath "${{ github.workspace }}\output" `
           --version auto
         
@@ -117,13 +149,18 @@ jobs:
     - name: Deploy to UiPath Orchestrator
       run: |
         Write-Host "Deploying to UiPath Orchestrator..."
+        
+        $tempDir = "$env:TEMP\uipath-cli"
+        $cliPath = "$tempDir\tools"
+        $env:PATH = "$cliPath;$env:PATH"
+        
         $packageFile = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         if ($packageFile) {
           Write-Host "Deploying package: $($packageFile.Name)"
           Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
           
-          uipcli package deploy `
+          & "$cliPath\uipcli.exe" package deploy `
             --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
             --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
             --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
