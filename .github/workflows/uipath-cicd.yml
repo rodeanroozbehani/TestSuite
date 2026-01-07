@@ -18,10 +18,14 @@ jobs:
     
     - name: Setup UiPath CLI
       run: |
-        Write-Host "Downloading UiPath CLI..."
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri "https://www.myget.org/F/uipath-dev/api/v2/package/UiPath.CLI.Windows/23.10.8753.32995" -OutFile "uipath-cli.zip"
-        Expand-Archive -Path "uipath-cli.zip" -DestinationPath "uipath-cli" -Force
+        Write-Host "Installing UiPath CLI..."
+        
+        # Install using chocolatey (pre-installed on GitHub runners)
+        choco install uipath-cli -y --no-progress
+        
+        # Verify installation
+        uipcli --version
+        
         Write-Host "UiPath CLI installed successfully"
       shell: powershell
     
@@ -42,9 +46,19 @@ jobs:
       id: run_tests
       run: |
         Write-Host "Running UiPath tests from Tests folder..."
-        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
         cd "${{ github.workspace }}\TestSuite"
-        & $env:UIPATH_CLI_PATH test run --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" --testTarget "Tests"
+        
+        uipcli test run `
+          --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
+          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+          --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+          --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          --testTarget "Tests"
+        
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Tests failed with exit code $LASTEXITCODE"
           exit 1
@@ -79,20 +93,22 @@ jobs:
     
     - name: Setup UiPath CLI
       run: |
-        Write-Host "Downloading UiPath CLI..."
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri "https://www.myget.org/F/uipath-dev/api/v2/package/UiPath.CLI.Windows/23.10.8753.32995" -OutFile "uipath-cli.zip"
-        Expand-Archive -Path "uipath-cli.zip" -DestinationPath "uipath-cli" -Force
+        Write-Host "Installing UiPath CLI..."
+        choco install uipath-cli -y --no-progress
+        uipcli --version
         Write-Host "UiPath CLI installed successfully"
       shell: powershell
     
     - name: Package UiPath Project
       run: |
         Write-Host "Packaging UiPath project..."
-        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
         New-Item -Path "${{ github.workspace }}\output" -ItemType Directory -Force
         cd "${{ github.workspace }}\TestSuite"
-        & $env:UIPATH_CLI_PATH package pack --outputPath "${{ github.workspace }}\output" --version auto
+        
+        uipcli package pack `
+          --outputPath "${{ github.workspace }}\output" `
+          --version auto
+        
         Write-Host "Packaging completed"
         Write-Host "Generated packages:"
         Get-ChildItem "${{ github.workspace }}\output" | Select-Object Name, Length | Write-Host
@@ -101,12 +117,23 @@ jobs:
     - name: Deploy to UiPath Orchestrator
       run: |
         Write-Host "Deploying to UiPath Orchestrator..."
-        $env:UIPATH_CLI_PATH = "${{ github.workspace }}\uipath-cli\tools\uipcli.exe"
         $packageFile = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
+        
         if ($packageFile) {
           Write-Host "Deploying package: $($packageFile.Name)"
           Write-Host "Target folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
-          & $env:UIPATH_CLI_PATH package deploy --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" --packagePath "$($packageFile.FullName)"
+          
+          uipcli package deploy `
+            --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+            --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+            --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+            --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+            --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+            --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+            --packagePath "$($packageFile.FullName)"
+          
           if ($LASTEXITCODE -eq 0) {
             Write-Host "Deployment completed successfully!"
           } else {
