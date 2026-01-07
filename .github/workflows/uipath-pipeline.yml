@@ -16,40 +16,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Download and Setup UiPath CLI
+    - name: Install UiPath CLI via PowerShell Gallery
       run: |
-        Write-Host "=== Installing UiPath CLI from NuGet ==="
+        Write-Host "=== Installing UiPath CLI ==="
         
-        $tempDir = Join-Path $env:TEMP "uipath-cli-install"
-        $cliDir = "C:\uipath-cli"
+        # Install from PowerShell Gallery
+        Install-Module -Name UiPath.CLI -Force -Scope CurrentUser -AllowClobber
         
-        New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
-        New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
+        # Import the module
+        Import-Module UiPath.CLI
         
-        # Using a known working version
-        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
-        $zipFile = Join-Path $tempDir "cli.zip"
+        # Verify installation
+        Get-Command -Module UiPath.CLI
         
-        Write-Host "Downloading from: $downloadUrl"
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -UseBasicParsing
-        
-        Write-Host "Extracting CLI..."
-        Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
-        
-        Write-Host "Setting up CLI..."
-        Copy-Item -Path "$tempDir\tools\*" -Destination $cliDir -Recurse -Force
-        
-        $cliExe = Join-Path $cliDir "uipcli.exe"
-        Write-Host "CLI location: $cliExe"
-        
-        if (Test-Path $cliExe) {
-          & $cliExe --version
-          Write-Host "=== UiPath CLI installed successfully ==="
-        } else {
-          Write-Host "ERROR: CLI executable not found!"
-          exit 1
-        }
+        Write-Host "=== UiPath CLI installed successfully ==="
       shell: powershell
     
     - name: Verify Project Structure
@@ -72,26 +52,26 @@ jobs:
       run: |
         Write-Host "=== Running UiPath Tests ==="
         
-        $cliExe = "C:\uipath-cli\uipcli.exe"
+        Import-Module UiPath.CLI
         cd "${{ github.workspace }}\TestSuite"
         
         Write-Host "Account: ${{ secrets.UIPATH_ACCOUNT_NAME }}"
         Write-Host "Tenant: ${{ secrets.UIPATH_TENANT_NAME }}"
         Write-Host "Folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
         
-        & $cliExe test run `
-          --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
-          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
-          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-          --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
-          --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
-          --testTarget "Tests"
+        Invoke-UiPathTestRun `
+          -AccountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -AccountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -ApplicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -ApplicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          -ApplicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
+          -OrganizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+          -TenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -FolderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          -TestTarget "Tests"
         
         if ($LASTEXITCODE -ne 0) {
-          Write-Host "ERROR: Tests failed with exit code $LASTEXITCODE"
+          Write-Host "ERROR: Tests failed"
           exit 1
         }
         
@@ -127,33 +107,24 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Download and Setup UiPath CLI
+    - name: Install UiPath CLI via PowerShell Gallery
       run: |
         Write-Host "=== Installing UiPath CLI ==="
-        $tempDir = Join-Path $env:TEMP "uipath-cli-install"
-        $cliDir = "C:\uipath-cli"
-        New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
-        New-Item -Path $cliDir -ItemType Directory -Force | Out-Null
-        $downloadUrl = "https://www.nuget.org/api/v2/package/UiPath.CLI/23.10.8753"
-        $zipFile = Join-Path $tempDir "cli.zip"
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -UseBasicParsing
-        Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
-        Copy-Item -Path "$tempDir\tools\*" -Destination $cliDir -Recurse -Force
-        $cliExe = Join-Path $cliDir "uipcli.exe"
-        & $cliExe --version
+        Install-Module -Name UiPath.CLI -Force -Scope CurrentUser -AllowClobber
+        Import-Module UiPath.CLI
         Write-Host "=== CLI installed ==="
       shell: powershell
     
     - name: Package UiPath Project
       run: |
         Write-Host "=== Packaging project ==="
-        $cliExe = "C:\uipath-cli\uipcli.exe"
+        Import-Module UiPath.CLI
+        
         $outputDir = "${{ github.workspace }}\output"
         New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
         cd "${{ github.workspace }}\TestSuite"
         
-        & $cliExe package pack --outputPath $outputDir --version auto
+        Invoke-UiPathPackPack -OutputPath $outputDir -Version auto
         
         Write-Host "Generated packages:"
         Get-ChildItem $outputDir | Select-Object Name, Length
@@ -162,23 +133,24 @@ jobs:
     - name: Deploy to Orchestrator
       run: |
         Write-Host "=== Deploying to Orchestrator ==="
-        $cliExe = "C:\uipath-cli\uipcli.exe"
+        Import-Module UiPath.CLI
+        
         $packageFile = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         if ($packageFile) {
           Write-Host "Package: $($packageFile.Name)"
           Write-Host "Folder: ${{ secrets.UIPATH_FOLDER_NAME }}"
           
-          & $cliExe package deploy `
-            --accountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-            --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-            --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
-            --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-            --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
-            --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-            --tenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
-            --folderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
-            --packagePath "$($packageFile.FullName)"
+          Invoke-UiPathPackageDeploy `
+            -AccountName "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            -AccountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+            -ApplicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+            -ApplicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+            -ApplicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+            -OrganizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+            -TenantName "${{ secrets.UIPATH_TENANT_NAME }}" `
+            -FolderName "${{ secrets.UIPATH_FOLDER_NAME }}" `
+            -PackagePath "$($packageFile.FullName)"
           
           if ($LASTEXITCODE -eq 0) {
             Write-Host "SUCCESS: Deployed to Orchestrator"
