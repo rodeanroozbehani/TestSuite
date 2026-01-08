@@ -46,7 +46,7 @@ jobs:
         
         # Try with tam_anz in the identity URL
         uipcli test run `
-          "https://staging.uipath.com/tam_anz/" `
+          "https://staging.uipath.com/" `
           "${{ secrets.UIPATH_TENANT_NAME }}" `
           -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           -I "${{ secrets.UIPATH_CLIENT_ID }}" `
