@@ -1,3 +1,11 @@
+git checkout TestSuite/develop
+   
+   # Make a tiny change (add a comment to Main.xaml or update README)
+   # Or just create an empty commit:
+   git commit --allow-empty -m "Test CI/CD pipeline"
+   
+   git push origin TestSuite/develop
+
 name: Deploy Tests to Orchestrator
   id: run_tests
   run: |
