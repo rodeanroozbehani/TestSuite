@@ -44,13 +44,13 @@ jobs:
         cd $env:PROJECT_PATH
         
         uipcli test run `
-          "https://cloud.uipath.com/" `
+          "https://staging.uipath.com/" `
           "${{ secrets.UIPATH_TENANT_NAME }}" `
           -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           -I "${{ secrets.UIPATH_CLIENT_ID }}" `
           -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read" `
-          -o "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          -o "Test Suite Workflow" `
           -P "."
         
         if ($LASTEXITCODE -ne 0) {
@@ -128,17 +128,17 @@ jobs:
         $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         uipcli package deploy `
-          "https://cloud.uipath.com/" `
+          "https://staging.uipath.com/" `
           "${{ secrets.UIPATH_TENANT_NAME }}" `
           -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           -I "${{ secrets.UIPATH_CLIENT_ID }}" `
           -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
-          -o "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          -o "Test Suite Workflow" `
           -P "$($package.FullName)"
         
         if ($LASTEXITCODE -eq 0) {
-          Write-Host "SUCCESS: Deployed to ${{ secrets.UIPATH_FOLDER_NAME }}"
+          Write-Host "SUCCESS: Deployed to Test Suite Workflow"
         } else {
           Write-Host "ERROR: Deployment failed"
           exit 1
@@ -150,7 +150,7 @@ jobs:
       run: |
         Write-Host ""
         Write-Host "========================================"
-        Write-Host "DEPLOYED TO: ${{ secrets.UIPATH_FOLDER_NAME }}"
+        Write-Host "DEPLOYED TO: Test Suite Workflow"
         Write-Host "COMMIT: ${{ github.sha }}"
         Write-Host "========================================"
       shell: powershell
