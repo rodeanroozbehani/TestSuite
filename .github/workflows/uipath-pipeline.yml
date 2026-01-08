@@ -21,51 +21,16 @@ jobs:
       with:
         platform-version: '24.10'
     
-    - name: List repository structure
+    - name: Find Project
       run: |
-        Write-Host "=== Repository Structure ==="
-        Write-Host "Working directory: ${{ github.workspace }}"
-        Get-ChildItem "${{ github.workspace }}" -Recurse -Depth 2 | Select-Object FullName
-      shell: powershell
-    
-    - name: Verify Project Structure
-      run: |
-        Write-Host "=== Checking for project.json ==="
-        
-        # Try to find project.json
+        Write-Host "=== Finding project ==="
         $projectFiles = Get-ChildItem "${{ github.workspace }}" -Filter "project.json" -Recurse -ErrorAction SilentlyContinue
-        
         if ($projectFiles) {
-          Write-Host "Found project.json files:"
-          $projectFiles | ForEach-Object { Write-Host $_.FullName }
-          
-          # Use the first one found
           $projectPath = $projectFiles[0].DirectoryName
-          Write-Host "Using project at: $projectPath"
-          
-          # Save for later steps
+          Write-Host "Project at: $projectPath"
           echo "PROJECT_PATH=$projectPath" >> $env:GITHUB_ENV
         } else {
-          Write-Host "ERROR: No project.json found"
-          exit 1
-        }
-      shell: powershell
-    
-    - name: Authenticate to Orchestrator
-      run: |
-        Write-Host "=== Authenticating ==="
-        
-        uipcli orchestrator login `
-          --account-name "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --client-id "${{ secrets.UIPATH_CLIENT_ID }}" `
-          --client-secret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --organization-id "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-          --tenant "${{ secrets.UIPATH_TENANT_NAME }}"
-        
-        if ($LASTEXITCODE -eq 0) {
-          Write-Host "Authentication successful"
-        } else {
-          Write-Host "Authentication failed"
+          Write-Host "ERROR: No project found"
           exit 1
         }
       shell: powershell
@@ -74,14 +39,19 @@ jobs:
       id: run_tests
       run: |
         Write-Host "=== Running Tests ==="
-        Write-Host "Project path: $env:PROJECT_PATH"
+        Write-Host "Project: $env:PROJECT_PATH"
         
         cd $env:PROJECT_PATH
         
         uipcli test run `
           --project-path . `
-          --orchestrator-url "https://cloud.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}" `
-          --orchestrator-folder "${{ secrets.UIPATH_FOLDER_NAME }}"
+          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+          --tenant "${{ secrets.UIPATH_TENANT_NAME }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
+          --orchestratorFolder "${{ secrets.UIPATH_FOLDER_NAME }}"
         
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Tests failed"
@@ -132,44 +102,55 @@ jobs:
         }
       shell: powershell
     
-    - name: Authenticate and Deploy
+    - name: Package Project
       run: |
-        Write-Host "=== Authenticating ==="
-        
-        uipcli orchestrator login `
-          --account-name "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --client-id "${{ secrets.UIPATH_CLIENT_ID }}" `
-          --client-secret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --organization-id "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-          --tenant "${{ secrets.UIPATH_TENANT_NAME }}"
-        
         Write-Host "=== Packaging ==="
-        cd $env:PROJECT_PATH
         
+        cd $env:PROJECT_PATH
         $outputDir = "${{ github.workspace }}\output"
         New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
         
         uipcli package pack --output-folder $outputDir
         
-        Write-Host "=== Deploying ==="
         $package = Get-ChildItem $outputDir -Filter "*.nupkg" | Select-Object -First 1
-        
         if ($package) {
-          Write-Host "Deploying: $($package.Name)"
-          
-          uipcli package deploy `
-            --package-path $package.FullName `
-            --orchestrator-url "https://cloud.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}" `
-            --orchestrator-folder "${{ secrets.UIPATH_FOLDER_NAME }}"
-          
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "SUCCESS: Deployed to ${{ secrets.UIPATH_FOLDER_NAME }}"
-          } else {
-            Write-Host "ERROR: Deployment failed"
-            exit 1
-          }
+          Write-Host "Package created: $($package.Name)"
         } else {
-          Write-Host "ERROR: No package found"
+          Write-Host "ERROR: No package created"
           exit 1
         }
+      shell: powershell
+    
+    - name: Deploy to Orchestrator
+      run: |
+        Write-Host "=== Deploying to Orchestrator ==="
+        
+        $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
+        
+        uipcli package deploy `
+          --package-path $package.FullName `
+          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
+          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
+          --tenant "${{ secrets.UIPATH_TENANT_NAME }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+          --orchestratorFolder "${{ secrets.UIPATH_FOLDER_NAME }}"
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "SUCCESS: Deployed to ${{ secrets.UIPATH_FOLDER_NAME }}"
+        } else {
+          Write-Host "ERROR: Deployment failed"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Deployment Summary
+      if: always()
+      run: |
+        Write-Host ""
+        Write-Host "========================================"
+        Write-Host "DEPLOYED TO: ${{ secrets.UIPATH_FOLDER_NAME }}"
+        Write-Host "COMMIT: ${{ github.sha }}"
+        Write-Host "========================================"
       shell: powershell
