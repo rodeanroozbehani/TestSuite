@@ -13,9 +13,18 @@
           },
           "in_OrchestratorQueueFolder": {
             "type": "string"
+          },
+          "in_FolderPath": {
+            "type": "string"
+          },
+          "in_FileName": {
+            "type": "string"
           }
         },
-        "required": []
+        "required": [
+          "in_FolderPath",
+          "in_FileName"
+        ]
       }
     }
   ]
