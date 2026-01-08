@@ -50,6 +50,7 @@ jobs:
           -I "${{ secrets.UIPATH_CLIENT_ID }}" `
           -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read" `
+          --identityUrl "https://staging.uipath.com/identity" `
           -o "Test Suite Workflow" `
           -P "."
         
@@ -134,6 +135,7 @@ jobs:
           -I "${{ secrets.UIPATH_CLIENT_ID }}" `
           -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+          --identityUrl "https://staging.uipath.com/identity" `
           -o "Test Suite Workflow" `
           -P "$($package.FullName)"
         
