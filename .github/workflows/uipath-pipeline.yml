@@ -1,4 +1,4 @@
-- name: Deploy Tests to Orchestrator
+name: Deploy Tests to Orchestrator
   id: run_tests
   run: |
     Write-Host "=== Packaging and Deploying Tests ==="
