@@ -16,46 +16,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Download and Install UiPath CLI
-      run: |
-        Write-Host "=== Downloading UiPath CLI ==="
-        
-        # Download CLI from GitHub releases (community approach)
-        $cliVersion = "23.10.8753"
-        $downloadUrl = "https://github.com/UiPath/uipathcli/releases/download/v$cliVersion/uipathcli-windows-$cliVersion.zip"
-        
-        Write-Host "Downloading from: $downloadUrl"
-        $zipPath = "$env:TEMP\uipathcli.zip"
-        
-        try {
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
-          Write-Host "Download successful"
-        } catch {
-          Write-Host "GitHub download failed, trying alternative URL..."
-          # Fallback to direct download
-          $downloadUrl = "https://www.myget.org/F/uipath/api/v2/package/UiPath.CLI/$cliVersion"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
-        }
-        
-        # Extract
-        $extractPath = "C:\uipath-cli"
-        Write-Host "Extracting to: $extractPath"
-        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-        
-        # Add to PATH
-        $env:PATH = "$extractPath;$env:PATH"
-        Write-Host "PATH updated"
-        
-        # Verify
-        $cliExe = Get-ChildItem -Path $extractPath -Filter "uipcli.exe" -Recurse | Select-Object -First 1
-        if ($cliExe) {
-          & $cliExe.FullName --version
-          Write-Host "=== UiPath CLI ready ==="
-        } else {
-          Write-Host "ERROR: uipcli.exe not found"
-          exit 1
-        }
-      shell: powershell
+    - name: Setup UiPath CLI
+      uses: Mikael-RnD/setup-uipath@v2
+      with:
+        platform-version: '24.10'
     
     - name: Verify Project Structure
       run: |
@@ -69,14 +33,10 @@ jobs:
       shell: powershell
     
     - name: Authenticate to Orchestrator
-      id: auth
       run: |
-        Write-Host "=== Authenticating to Orchestrator ==="
+        Write-Host "=== Authenticating ==="
         
-        $cliExe = Get-ChildItem -Path "C:\uipath-cli" -Filter "uipcli.exe" -Recurse | Select-Object -First 1
-        
-        # Using the cloud authentication approach from forums
-        & $cliExe.FullName orchestrator login `
+        uipcli orchestrator login `
           --account-name "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --client-id "${{ secrets.UIPATH_CLIENT_ID }}" `
           --client-secret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
@@ -96,11 +56,9 @@ jobs:
       run: |
         Write-Host "=== Running Tests ==="
         
-        $cliExe = Get-ChildItem -Path "C:\uipath-cli" -Filter "uipcli.exe" -Recurse | Select-Object -First 1
         cd "${{ github.workspace }}\TestSuite"
         
-        # Run tests using the authenticated session
-        & $cliExe.FullName test run `
+        uipcli test run `
           --project-path . `
           --orchestrator-url "https://cloud.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}" `
           --orchestrator-folder "${{ secrets.UIPATH_FOLDER_NAME }}"
@@ -118,15 +76,11 @@ jobs:
       run: |
         Write-Host ""
         Write-Host "========================================"
-        Write-Host "TEST SUMMARY"
-        Write-Host "========================================"
-        
         if ("${{ steps.run_tests.outcome }}" -eq "success") {
-          Write-Host "PASSED - Safe to merge"
+          Write-Host "PASSED"
         } else {
-          Write-Host "FAILED - Do not merge"
+          Write-Host "FAILED"
         }
-        
         Write-Host "========================================"
       shell: powershell
 
@@ -139,51 +93,32 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - name: Download and Install UiPath CLI
-      run: |
-        Write-Host "=== Installing CLI ==="
-        $cliVersion = "23.10.8753"
-        $downloadUrl = "https://github.com/UiPath/uipathcli/releases/download/v$cliVersion/uipathcli-windows-$cliVersion.zip"
-        $zipPath = "$env:TEMP\uipathcli.zip"
-        
-        try {
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
-        } catch {
-          $downloadUrl = "https://www.myget.org/F/uipath/api/v2/package/UiPath.CLI/$cliVersion"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
-        }
-        
-        $extractPath = "C:\uipath-cli"
-        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-        Write-Host "CLI installed"
-      shell: powershell
+    - name: Setup UiPath CLI
+      uses: Mikael-RnD/setup-uipath@v2
+      with:
+        platform-version: '24.10'
     
-    - name: Package and Deploy
+    - name: Authenticate and Deploy
       run: |
-        Write-Host "=== Packaging and Deploying ==="
+        Write-Host "=== Authenticating ==="
         
-        $cliExe = Get-ChildItem -Path "C:\uipath-cli" -Filter "uipcli.exe" -Recurse | Select-Object -First 1
-        
-        # Authenticate
-        & $cliExe.FullName orchestrator login `
+        uipcli orchestrator login `
           --account-name "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
           --client-id "${{ secrets.UIPATH_CLIENT_ID }}" `
           --client-secret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --organization-id "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
           --tenant "${{ secrets.UIPATH_TENANT_NAME }}"
         
+        Write-Host "=== Packaging ==="
         cd "${{ github.workspace }}\TestSuite"
         
-        # Package
-        Write-Host "Packaging..."
-        & $cliExe.FullName package pack --output-folder "${{ github.workspace }}\output"
+        uipcli package pack --output-folder "${{ github.workspace }}\output"
         
-        # Deploy
-        Write-Host "Deploying..."
+        Write-Host "=== Deploying ==="
         $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         if ($package) {
-          & $cliExe.FullName package deploy `
+          uipcli package deploy `
             --package-path $package.FullName `
             --orchestrator-url "https://cloud.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}" `
             --orchestrator-folder "${{ secrets.UIPATH_FOLDER_NAME }}"
@@ -191,20 +126,10 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             Write-Host "Deployment successful"
           } else {
-            Write-Host "Deployment failed"
             exit 1
           }
         } else {
           Write-Host "No package found"
           exit 1
         }
-      shell: powershell
-    
-    - name: Deployment Summary
-      if: always()
-      run: |
-        Write-Host ""
-        Write-Host "========================================"
-        Write-Host "DEPLOYED TO: ${{ secrets.UIPATH_FOLDER_NAME }}"
-        Write-Host "========================================"
       shell: powershell
