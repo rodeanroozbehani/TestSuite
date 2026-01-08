@@ -44,14 +44,14 @@ jobs:
         cd $env:PROJECT_PATH
         
         uipcli test run `
-          --project-path . `
-          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
-          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-          --tenant "${{ secrets.UIPATH_TENANT_NAME }}" `
-          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions" `
-          --orchestratorFolder "${{ secrets.UIPATH_FOLDER_NAME }}"
+          "https://cloud.uipath.com/" `
+          "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read" `
+          -o "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          -P "."
         
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Tests failed"
@@ -110,7 +110,7 @@ jobs:
         $outputDir = "${{ github.workspace }}\output"
         New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
         
-        uipcli package pack --output-folder $outputDir
+        uipcli package pack -P "." --output-folder $outputDir
         
         $package = Get-ChildItem $outputDir -Filter "*.nupkg" | Select-Object -First 1
         if ($package) {
@@ -128,14 +128,14 @@ jobs:
         $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
         
         uipcli package deploy `
-          --package-path $package.FullName `
-          --accountForApp "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          --applicationId "${{ secrets.UIPATH_CLIENT_ID }}" `
-          --applicationSecret "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --organizationId "${{ secrets.UIPATH_ORGANIZATION_ID }}" `
-          --tenant "${{ secrets.UIPATH_TENANT_NAME }}" `
+          "https://cloud.uipath.com/" `
+          "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
-          --orchestratorFolder "${{ secrets.UIPATH_FOLDER_NAME }}"
+          -o "${{ secrets.UIPATH_FOLDER_NAME }}" `
+          -P "$($package.FullName)"
         
         if ($LASTEXITCODE -eq 0) {
           Write-Host "SUCCESS: Deployed to ${{ secrets.UIPATH_FOLDER_NAME }}"
