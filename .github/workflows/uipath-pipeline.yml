@@ -36,51 +36,53 @@ jobs:
       shell: powershell
     
     - name: Run Tests in Orchestrator
-      id: run_tests
-      run: |
-        Write-Host "=== Running Tests in Orchestrator ==="
-        Write-Host "Project: $env:PROJECT_PATH"
-        
-        cd $env:PROJECT_PATH
-        
-        # Pre-create the .generated folder to avoid cleanup errors
-        New-Item -Path ".\.generated" -ItemType Directory -Force | Out-Null
-        Write-Host "Created .generated folder"
-        
-        # Create output directory for test results
-        $testOutputDir = "${{ github.workspace }}\test-results"
-        New-Item -Path $testOutputDir -ItemType Directory -Force | Out-Null
-        
-        # Run tests
-        Write-Host "Executing tests..."
-        
-        uipcli test run `
-          "https://staging.uipath.com/" `
-          "${{ secrets.UIPATH_TENANT_NAME }}" `
-          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
-          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
-          --identityUrl "https://staging.uipath.com/identity_" `
-          -o "Test Suite Workflow" `
-          -P "." `
-          --out "junit" `
-          -r "$testOutputDir\results.xml"
-        
-        $testExitCode = $LASTEXITCODE
-        
-        # Clean up
-        if (Test-Path ".\.generated") {
-          Remove-Item ".\.generated" -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        
-        if ($testExitCode -eq 0) {
-          Write-Host "✅ ALL TESTS PASSED!"
-        } else {
-          Write-Host "❌ TESTS FAILED (Exit code: $testExitCode)"
-          exit $testExitCode
-        }
-      shell: powershell
+  id: run_tests
+  run: |
+    Write-Host "=== Running Tests in Orchestrator ==="
+    Write-Host "Project: $env:PROJECT_PATH"
+    
+    cd $env:PROJECT_PATH
+    $projectPath = Get-Location
+    Write-Host "Working directory: $projectPath"
+    
+    # Pre-create the .generated folder to avoid cleanup errors
+    New-Item -Path "$projectPath\.generated" -ItemType Directory -Force | Out-Null
+    Write-Host "Created .generated folder"
+    
+    # Create output directory for test results
+    $testOutputDir = "${{ github.workspace }}\test-results"
+    New-Item -Path $testOutputDir -ItemType Directory -Force | Out-Null
+    
+    # Run tests - use full path to project.json
+    Write-Host "Executing tests..."
+    
+    uipcli test run `
+      "https://staging.uipath.com/" `
+      "${{ secrets.UIPATH_TENANT_NAME }}" `
+      -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+      -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+      -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+      --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
+      --identityUrl "https://staging.uipath.com/identity_" `
+      -o "Test Suite Workflow" `
+      -P "$projectPath\project.json" `
+      --out "junit" `
+      -r "$testOutputDir\results.xml"
+    
+    $testExitCode = $LASTEXITCODE
+    
+    # Clean up
+    if (Test-Path "$projectPath\.generated") {
+      Remove-Item "$projectPath\.generated" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    
+    if ($testExitCode -eq 0) {
+      Write-Host "✅ ALL TESTS PASSED!"
+    } else {
+      Write-Host "❌ TESTS FAILED (Exit code: $testExitCode)"
+      exit $testExitCode
+    }
+  shell: powershell
     
     - name: Upload Test Results
       if: always()
