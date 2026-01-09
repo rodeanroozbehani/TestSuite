@@ -65,7 +65,7 @@ jobs:
           --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
           --identityUrl "https://staging.uipath.com/identity_" `
           -o "Test Suite Workflow" `
-          -P "$projectPath\project.json" `
+          -P "$projectPath" `
           --out "junit" `
           -r "$testOutputDir\results.xml"
         
