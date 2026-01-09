@@ -11,169 +11,193 @@ on:
 jobs:
   test:
     runs-on: windows-latest
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup UiPath CLI
-        uses: Mikael-RnD/setup-uipath@v2
-        with:
-          platform-version: '24.10'
-
-      - name: Find Project
-        shell: powershell
-        run: |
-          Write-Host "=== Finding project ==="
-          $projectFiles = Get-ChildItem "${{ github.workspace }}" -Filter "project.json" -Recurse -ErrorAction SilentlyContinue
-          if ($projectFiles) {
-            $projectPath = $projectFiles[0].DirectoryName
-            Write-Host "Project at: $projectPath"
-            echo "PROJECT_PATH=$projectPath" >> $env:GITHUB_ENV
-          } else {
-            Write-Host "ERROR: No project found"
-            exit 1
-          }
-
-      - name: Run Tests in Orchestrator
-        id: run_tests
-        shell: powershell
-        run: |
-          Write-Host "=== Running Tests in Orchestrator ==="
-          Write-Host "Project: $env:PROJECT_PATH"
-
-          cd $env:PROJECT_PATH
-          Write-Host "Working directory: $(Get-Location)"
-
-          # Create test results directory
-          $testOutputDir = "${{ github.workspace }}\test-results"
-          New-Item -Path $testOutputDir -ItemType Directory -Force | Out-Null
-
-          # Run tests directly from project (no packaging)
-          Write-Host "Executing tests..."
-
-          uipcli test run `
-            "https://staging.uipath.com/" `
-            "${{ secrets.UIPATH_TENANT_NAME }}" `
-            -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-            -I "${{ secrets.UIPATH_CLIENT_ID }}" `
-            -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-            --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
-            --identityUrl "https://staging.uipath.com/identity_" `
-            -o "Test Suite Workflow" `
-            -P "project.json" `
-            --out "junit" `
-            -r "$testOutputDir\results.xml"
-
-          $testExitCode = $LASTEXITCODE
-
-          if ($testExitCode -eq 0) {
-            Write-Host "✅ ALL TESTS PASSED!"
-          } else {
-            Write-Host "❌ TESTS FAILED (Exit code: $testExitCode)"
-            exit $testExitCode
-          }
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: ${{ github.workspace }}\test-results\*.xml
-          if-no-files-found: ignore
-
-      - name: Test Summary
-        if: always()
-        shell: powershell
-        run: |
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup UiPath CLI
+      uses: Mikael-RnD/setup-uipath@v2
+      with:
+        platform-version: '24.10'
+    
+    - name: Find Project
+      run: |
+        Write-Host "=== Finding project ==="
+        $projectFiles = Get-ChildItem "${{ github.workspace }}" -Filter "project.json" -Recurse
+        $projectPath = $projectFiles[0].DirectoryName
+        Write-Host "Project at: $projectPath"
+        echo "PROJECT_PATH=$projectPath" >> $env:GITHUB_ENV
+      shell: powershell
+    
+    - name: Package and Deploy for Testing
+      run: |
+        Write-Host "=== Packaging for Testing ==="
+        
+        cd $env:PROJECT_PATH
+        $outputDir = "${{ github.workspace }}\output"
+        New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
+        
+        # Package the project
+        uipcli package pack "." -o $outputDir
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "❌ Packaging failed"
+          exit 1
+        }
+        
+        $package = Get-ChildItem $outputDir -Filter "*.nupkg" | Select-Object -First 1
+        if (-not $package) {
+          Write-Host "❌ No package created"
+          exit 1
+        }
+        
+        Write-Host "Package created: $($package.Name)"
+        
+        # Deploy to Orchestrator so tests can use latest code
+        Write-Host "Deploying to Orchestrator for testing..."
+        uipcli package deploy `
+          "https://staging.uipath.com/" `
+          "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+          --identityUrl "https://staging.uipath.com/identity_" `
+          -o "Test Suite Workflow" `
+          -P "$($package.FullName)"
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "✅ Package deployed for testing"
+        } else {
+          Write-Host "❌ Deployment failed"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Execute Test Set in Orchestrator
+      id: run_tests
+      run: |
+        Write-Host "=== Executing Test Set in Orchestrator ==="
+        
+        # Execute the test set (REPLACE 'CI_CD_Test_Suite' with your actual test set name)
+        uipcli testset execute `
+          "https://staging.uipath.com/" `
+          "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.Jobs" `
+          --identityUrl "https://staging.uipath.com/identity_" `
+          -o "Test Suite Workflow" `
+          --testset "CI_CD_Test_Suite" `
+          --wait
+        
+        $testExitCode = $LASTEXITCODE
+        
+        if ($testExitCode -eq 0) {
+          Write-Host "✅ ALL TESTS PASSED!"
+          exit 0
+        } else {
+          Write-Host "❌ TESTS FAILED"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Test Summary
+      if: always()
+      run: |
+        Write-Host ""
+        Write-Host "========================================"
+        Write-Host "TEST EXECUTION SUMMARY"
+        Write-Host "========================================"
+        if ("${{ steps.run_tests.outcome }}" -eq "success") {
+          Write-Host "✅ ALL TESTS PASSED - Safe to merge"
+        } else {
+          Write-Host "❌ TESTS FAILED - Do not merge"
           Write-Host ""
-          Write-Host "========================================"
-          Write-Host "TEST EXECUTION SUMMARY"
-          Write-Host "========================================"
-          if ("${{ steps.run_tests.outcome }}" -eq "success") {
-            Write-Host "✅ PASSED - Safe to merge"
-          } else {
-            Write-Host "❌ FAILED - Do not merge"
-            Write-Host "Check test results in Orchestrator:"
-            Write-Host "https://staging.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}/orchestrator_/testing"
-          }
-          Write-Host "========================================"
+          Write-Host "View detailed results:"
+          Write-Host "https://staging.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}/orchestrator_/testing/test-executions"
+        }
+        Write-Host "========================================"
+      shell: powershell
 
   deploy:
     needs: test
     runs-on: windows-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/TestSuite/release'
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup UiPath CLI
-        uses: Mikael-RnD/setup-uipath@v2
-        with:
-          platform-version: '24.10'
-
-      - name: Find Project
-        shell: powershell
-        run: |
-          Write-Host "=== Finding project ==="
-          $projectFiles = Get-ChildItem "${{ github.workspace }}" -Filter "project.json" -Recurse
-          $projectPath = $projectFiles[0].DirectoryName
-          Write-Host "Project at: $projectPath"
-          echo "PROJECT_PATH=$projectPath" >> $env:GITHUB_ENV
-
-      - name: Package Project
-        shell: powershell
-        run: |
-          Write-Host "=== Packaging ==="
-
-          cd $env:PROJECT_PATH
-          $outputDir = "${{ github.workspace }}\output"
-          New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
-
-          uipcli package pack "." -o $outputDir
-
-          $package = Get-ChildItem $outputDir -Filter "*.nupkg" | Select-Object -First 1
-          if ($package) {
-            Write-Host "Package created: $($package.Name)"
-          } else {
-            Write-Host "ERROR: No package created"
-            exit 1
-          }
-
-      - name: Deploy to Orchestrator
-        shell: powershell
-        run: |
-          Write-Host "=== Deploying to Orchestrator ==="
-
-          $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
-
-          uipcli package deploy `
-            "https://staging.uipath.com/" `
-            "${{ secrets.UIPATH_TENANT_NAME }}" `
-            -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-            -I "${{ secrets.UIPATH_CLIENT_ID }}" `
-            -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-            --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
-            --identityUrl "https://staging.uipath.com/identity_" `
-            -o "Test Suite Workflow" `
-            -P "$($package.FullName)"
-
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ SUCCESS: Deployed to Orchestrator!"
-          } else {
-            Write-Host "❌ ERROR: Deployment failed"
-            exit 1
-          }
-
-      - name: Deployment Summary
-        if: always()
-        shell: powershell
-        run: |
-          Write-Host ""
-          Write-Host "========================================"
-          Write-Host "DEPLOYED TO: Test Suite Workflow"
-          Write-Host "COMMIT: ${{ github.sha }}"
-          Write-Host "View in Orchestrator:"
-          Write-Host "https://staging.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}/orchestrator_/"
-          Write-Host "========================================"
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup UiPath CLI
+      uses: Mikael-RnD/setup-uipath@v2
+      with:
+        platform-version: '24.10'
+    
+    - name: Find Project
+      run: |
+        Write-Host "=== Finding project ==="
+        $projectFiles = Get-ChildItem "${{ github.workspace }}" -Filter "project.json" -Recurse
+        $projectPath = $projectFiles[0].DirectoryName
+        Write-Host "Project at: $projectPath"
+        echo "PROJECT_PATH=$projectPath" >> $env:GITHUB_ENV
+      shell: powershell
+    
+    - name: Package Project
+      run: |
+        Write-Host "=== Packaging ==="
+        
+        cd $env:PROJECT_PATH
+        $outputDir = "${{ github.workspace }}\output"
+        New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
+        
+        uipcli package pack "." -o $outputDir
+        
+        $package = Get-ChildItem $outputDir -Filter "*.nupkg" | Select-Object -First 1
+        if ($package) {
+          Write-Host "Package created: $($package.Name)"
+        } else {
+          Write-Host "ERROR: No package created"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Deploy to Orchestrator
+      run: |
+        Write-Host "=== Deploying to Orchestrator ==="
+        
+        $package = Get-ChildItem "${{ github.workspace }}\output" -Filter "*.nupkg" | Select-Object -First 1
+        
+        uipcli package deploy `
+          "https://staging.uipath.com/" `
+          "${{ secrets.UIPATH_TENANT_NAME }}" `
+          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+          --applicationScope "OR.Execution OR.Folders OR.Settings OR.Machines OR.Robots OR.Assets OR.Jobs" `
+          --identityUrl "https://staging.uipath.com/identity_" `
+          -o "Test Suite Workflow" `
+          -P "$($package.FullName)"
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "✅ SUCCESS: Deployed to Orchestrator!"
+        } else {
+          Write-Host "❌ ERROR: Deployment failed"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Deployment Summary
+      if: always()
+      run: |
+        Write-Host ""
+        Write-Host "========================================"
+        Write-Host "DEPLOYMENT COMPLETE"
+        Write-Host "========================================"
+        Write-Host "📍 Folder: Test Suite Workflow"
+        Write-Host "🔗 Orchestrator:"
+        Write-Host "   https://staging.uipath.com/${{ secrets.UIPATH_ACCOUNT_NAME }}/${{ secrets.UIPATH_TENANT_NAME }}/orchestrator_/"
+        Write-Host "========================================"
+      shell: powershell
