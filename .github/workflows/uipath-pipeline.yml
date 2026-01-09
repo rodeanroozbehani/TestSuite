@@ -38,69 +38,49 @@ jobs:
     - name: Run Tests in Orchestrator
       id: run_tests
       run: |
-        Write-Host "=== Running Tests in Orchestrator ==="
-        Write-Host "Project: $env:PROJECT_PATH"
-        
-        cd $env:PROJECT_PATH
-        
-        # Create output directory for test results
-        $testOutputDir = "${{ github.workspace }}\test-results"
-        New-Item -Path $testOutputDir -ItemType Directory -Force | Out-Null
-        
-        # Run tests and capture output
-        Write-Host "Executing tests..."
-        
-        $testOutput = & uipcli test run `
-          "https://staging.uipath.com/" `
-          "${{ secrets.UIPATH_TENANT_NAME }}" `
-          -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
-          -I "${{ secrets.UIPATH_CLIENT_ID }}" `
-          -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
-          --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
-          --identityUrl "https://staging.uipath.com/identity_" `
-          -o "Test Suite Workflow" `
-          -P "." `
-          --out "junit" `
-          -r "$testOutputDir\results.xml" 2>&1
-        
-        # Capture the exit code immediately
-        $testExitCode = $LASTEXITCODE
-        
-        # Output the test results
-        Write-Host "Test Output:"
-        Write-Host $testOutput
-        
-        # Try to clean up .generated folder (ignore errors)
-        try {
-          if (Test-Path ".\.generated") {
-            Remove-Item ".\.generated" -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Host "Cleaned up .generated folder"
-          }
-        } catch {
-          Write-Host "Note: Could not clean up .generated folder (non-critical)"
-        }
-        
-        # Check if test results file was created
-        if (Test-Path "$testOutputDir\results.xml") {
-          Write-Host "Test results saved to: $testOutputDir\results.xml"
-        }
-        
-        # Evaluate test results
-        if ($testExitCode -eq 0) {
-          Write-Host "✅ ALL TESTS PASSED!"
-          exit 0
-        } else {
-          Write-Host "❌ TESTS FAILED (Exit code: $testExitCode)"
-          
-          # Even if tests failed, exit 0 if the failure was just cleanup
-          if ($testOutput -like "*RemoveGenaratedFolder*") {
-            Write-Host "Note: Failure appears to be cleanup-related, not actual test failure"
-            Write-Host "Check Orchestrator for actual test results"
-          }
-          
-          exit $testExitCode
-        }
-      shell: powershell
+    Write-Host "=== Running Tests in Orchestrator ==="
+    Write-Host "Project: $env:PROJECT_PATH"
+    
+    cd $env:PROJECT_PATH
+    
+    # Pre-create the .generated folder to avoid cleanup errors
+    New-Item -Path ".\.generated" -ItemType Directory -Force | Out-Null
+    Write-Host "Created .generated folder"
+    
+    # Create output directory for test results
+    $testOutputDir = "${{ github.workspace }}\test-results"
+    New-Item -Path $testOutputDir -ItemType Directory -Force | Out-Null
+    
+    # Run tests
+    Write-Host "Executing tests..."
+    
+    uipcli test run `
+      "https://staging.uipath.com/" `
+      "${{ secrets.UIPATH_TENANT_NAME }}" `
+      -A "${{ secrets.UIPATH_ACCOUNT_NAME }}" `
+      -I "${{ secrets.UIPATH_CLIENT_ID }}" `
+      -S "${{ secrets.UIPATH_CLIENT_SECRET }}" `
+      --applicationScope "OR.Execution OR.Folders OR.Settings OR.TestSets OR.TestSetExecutions OR.Robots.Read OR.Machines.Read OR.BackgroundTasks OR.Jobs OR.Assets" `
+      --identityUrl "https://staging.uipath.com/identity_" `
+      -o "Test Suite Workflow" `
+      -P "." `
+      --out "junit" `
+      -r "$testOutputDir\results.xml"
+    
+    $testExitCode = $LASTEXITCODE
+    
+    # Clean up
+    if (Test-Path ".\.generated") {
+      Remove-Item ".\.generated" -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    
+    if ($testExitCode -eq 0) {
+      Write-Host "✅ ALL TESTS PASSED!"
+    } else {
+      Write-Host "❌ TESTS FAILED (Exit code: $testExitCode)"
+      exit $testExitCode
+    }
+  shell: powershell
     
     - name: Upload Test Results
       if: always()
